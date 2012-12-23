@@ -1,0 +1,2 @@
+START n=node(*), m=node(4) WHERE has(n.Type) and n.Type = "Diagnose" return n, m
+RANK BY RELEVANCE (n,_4)

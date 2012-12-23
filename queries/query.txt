@@ -1,0 +1,6 @@
+SELECT ?developer WHERE { ?developer <http://tinkerpop.com#age> ?age . FILTER (?age < 34)}
+RANK BY REPUTATION (?developer)
+
+
+START n=node(*) WHERE has(n.label) and has(n.type) and n.type = 'like' and n.label =~ 'L.*' return n, n.label, n.id
+RANK BY REPUTATION (n)

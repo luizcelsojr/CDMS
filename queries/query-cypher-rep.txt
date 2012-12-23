@@ -1,0 +1,3 @@
+-- -l cypher -f /home/lis/luizcelso/phd/workspace/GIRDB/queries/query-cypher-rep.txt -d /lishome-ext/luizcelso/graphdbs/tinkergraph
+START n=node(*) WHERE has(n.age) return n, n.id
+RANK BY REPUTATION (n)

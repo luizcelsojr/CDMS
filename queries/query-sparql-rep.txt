@@ -1,0 +1,2 @@
+SELECT ?developer WHERE { ?developer <http://tinkerpop.com#age> ?age . FILTER (?age < 34)}
+RANK BY REPUTATION (?developer)

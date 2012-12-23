@@ -1,0 +1,5 @@
+START n=node(*) WHERE has(n.Type) and n.Type = "Diagnose" return n
+RANK BY 1 WRELEVANCE (n,_117)
+--RANK BY 2 WCONNECTIVITY (n,_121)
+--RANK BY WRELEVANCE (n,_117)
+--RANK BY WCONNECTIVITY (n,_117)

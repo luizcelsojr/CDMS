@@ -1,0 +1,17 @@
+
+-- all directors
+select * where{?d a <http://data.linkedmdb.org/resource/movie/director> .
+?d rdfs:label ?l}
+
+
+
+PREFIX movie: <http://data.linkedmdb.org/resource/movie/>
+
+select * where{
+?f movie:director <http://data.linkedmdb.org/resource/director/8501> .
+?f rdfs:label ?l .
+?f movie:actor ?a .
+?a rdfs:label ?la .
+?f movie:initial_release_date ?date .
+FILTER ( fn:starts-with(?date, "199") )
+}
