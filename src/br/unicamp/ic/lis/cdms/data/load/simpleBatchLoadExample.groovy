@@ -1,11 +1,9 @@
-package br.unicamp.ic.lis.girdb.data.load
+package br.unicamp.ic.lis.cdms.data.load
 import org.neo4j.graphdb.*
-import org.neo4j.graphdb.index.BatchInserterIndexProvider
 import org.neo4j.helpers.collection.MapUtil;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.impl.util.FileUtils;
-import org.neo4j.unsafe.batchinsert.BatchInserter;
-import org.neo4j.unsafe.batchinsert.BatchInserterIndex
+import org.neo4j.unsafe.batchinsert.BatchInserter
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.neo4j.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
 

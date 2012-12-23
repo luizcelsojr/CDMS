@@ -1,4 +1,4 @@
-package br.unicamp.ic.lis.girdb;
+package br.unicamp.ic.lis.cdms;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 

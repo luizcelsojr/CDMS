@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/GIRDB.iml" filepath="$PROJECT_DIR$/GIRDB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CDMS.iml" filepath="$PROJECT_DIR$/CDMS.iml" />
     </modules>
   </component>
 </project>

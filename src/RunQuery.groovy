@@ -1,18 +1,8 @@
-
-import org.neo4j.graphdb.factory.GraphDatabaseFactory
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.sail.*
 import com.tinkerpop.blueprints.impls.tg.*
-import com.tinkerpop.blueprints.oupls.sail.*
-import org.openrdf.query.parser.sparql.*
-import org.openrdf.query.impl.*
 import com.tinkerpop.gremlin.groovy.Gremlin
-import groovy.util.CliBuilder
-import net.fortytwo.sesametools.reposail.RepositorySail
-//import virtuoso.sesame2.driver.VirtuosoRepository
-import com.tinkerpop.blueprints.impls.sail.SailGraph
 
-import br.unicamp.ic.lis.girdb.*
+//import virtuoso.sesame2.driver.VirtuosoRepository
+import br.unicamp.ic.lis.cdms.*
 
 
 def getSailConn(){

@@ -26,10 +26,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="CDMS" />
         <module name="GIRDB" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="CDMS" target="1.6" />
       <module name="GIRDB" target="1.6" />
     </bytecodeTargetLevel>
   </component>

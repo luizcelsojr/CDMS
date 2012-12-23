@@ -1,20 +1,9 @@
-package br.unicamp.ic.lis.girdb
+package br.unicamp.ic.lis.cdms
 
-import org.neo4j.graphdb.factory.GraphDatabaseFactory
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.sail.*
 import com.tinkerpop.blueprints.impls.tg.*
-import com.tinkerpop.blueprints.oupls.sail.*
-import org.openrdf.query.parser.sparql.*
-import org.openrdf.query.impl.*
 import com.tinkerpop.gremlin.groovy.Gremlin
-import groovy.util.CliBuilder
-import net.fortytwo.sesametools.reposail.RepositorySail
-//import virtuoso.sesame2.driver.VirtuosoRepository
-import com.tinkerpop.blueprints.impls.sail.SailGraph
-import br.unicamp.ic.lis.girdb.CypherPlusQueryProc
-import br.unicamp.ic.lis.girdb.SparqlQueryProc
 
+//import virtuoso.sesame2.driver.VirtuosoRepository
 def getSailConn(){
 	def VIRTUOSO_INSTANCE = "gaponga";
 	def VIRTUOSO_PORT = 1111;

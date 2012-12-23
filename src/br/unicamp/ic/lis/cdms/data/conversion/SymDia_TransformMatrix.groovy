@@ -1,4 +1,4 @@
-package br.unicamp.ic.lis.girdb.data.conversion
+package br.unicamp.ic.lis.cdms.data.conversion
 
 def header = null
 

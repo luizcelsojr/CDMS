@@ -1,14 +1,8 @@
-package br.unicamp.ic.lis.girdb
+package br.unicamp.ic.lis.cdms
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
-import org.neo4j.graphdb.factory.GraphDatabaseSettings
-import org.openrdf.sail.*
-import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.blueprints.impls.neo4j.*
-import org.openrdf.query.parser.sparql.*
-import org.openrdf.query.impl.*
-
 import scala.collection.immutable.Map;
 
 import com.tinkerpop.gremlin.groovy.Gremlin

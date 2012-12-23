@@ -1,13 +1,6 @@
-package br.unicamp.ic.lis.girdb
-import org.openrdf.sail.*
-import com.tinkerpop.blueprints.impls.tg.*
-import com.tinkerpop.blueprints.oupls.sail.*
+package br.unicamp.ic.lis.cdms
 
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.parser.sparql.*
-import org.openrdf.query.impl.*
+import org.openrdf.query.QueryLanguage
 import com.tinkerpop.gremlin.groovy.Gremlin
 
 
