@@ -3,6 +3,7 @@ package br.unicamp.ic.lis.cdms
 import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.gremlin.groovy.Gremlin
 
+
 //import virtuoso.sesame2.driver.VirtuosoRepository
 def getSailConn(){
 	def VIRTUOSO_INSTANCE = "gaponga";
