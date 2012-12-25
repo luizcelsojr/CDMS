@@ -1,4 +1,6 @@
 package br.unicamp.ic.lis.cdms
+
+import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
@@ -260,6 +262,9 @@ class CypherPlusQueryProc{
 			def destid = plist[1][1..-1] //remove <> from id
 			def dest = this.graph.v(destid)
 			def origs = []
+            def weightProp = "Weight"
+
+
 			
 			while(this.regResults.hasNext()) {
 				def v = this.graph.v(this.regResults.next().getProperty(plist[0]).getId());
@@ -267,10 +272,12 @@ class CypherPlusQueryProc{
 				
 			}
 
-//def g = TinkerGraphFactory.createTinkerGraph()
-//origs = [g.v(4), g.v(1), g.v(5), g.v(3), g.v(6)]
-//dest = g.v(2)
 
+//def g = TinkerGraphFactory.createTinkerGraph()
+//origs = [g.v(5)]
+//dest = g.v(1)
+//destid = dest.id.toString()
+//weightProp = "weight"
 
 			def A = [:].withDefault{0}
 			def R = [:] //results
@@ -309,7 +316,7 @@ class CypherPlusQueryProc{
 									return []}
 								def Atransfer = (A[it] * d)/n
 								neighbors.each{
-									A[it[-1]] += Atransfer * it[1].Weight.toFloat() // it is the path, it[-1] is the outV
+									A[it[-1]] += Atransfer * it[1].getProperty(weightProp).toFloat() // it is the path, it[-1] is the outV
 								}
 								if (n) A[it] = 0
 								//println "A ${A}"

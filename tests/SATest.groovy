@@ -15,16 +15,38 @@
  * To change this template use File | Settings | File Templates.
  */
 
-import groovy.util.*
+//import groovy.util.*
+import br.unicamp.ic.lis.cdms.sa.*
+import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
+import com.tinkerpop.gremlin.groovy.Gremlin
+import br.unicamp.ic.lis.cdms.benchmark.Timer
 
 class SATest extends GroovyTestCase{
     private sa
 
+
+
     void setUp(){
+        Gremlin.load()
+        sa = new SA()
+
+        //TODO: groovify
+
+        def g = TinkerGraphFactory.createTinkerGraph()
+        sa.setGraph(g)
+        sa.setOrig(g.v(5))
+        sa.setDest(g.v(1))
+
         println "setuuupiiiii"
     }
 
     void testSA(){
-        assertEquals("hi", "hi")
+        def potential
+        def time = Timer.closureBenchmark{potential = this.sa.process()}
+
+        println "total time: ${time}"
+
+        println "result: ${potential}"
+        assertEquals(potential, 81.0)
     }
 }
