@@ -20,33 +20,52 @@ import br.unicamp.ic.lis.cdms.sa.*
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import com.tinkerpop.gremlin.groovy.Gremlin
 import br.unicamp.ic.lis.cdms.benchmark.Timer
+import br.unicamp.ic.lis.cdms.util.Constants
 
 class SATest extends GroovyTestCase{
     private sa
+    def defaultArgs = [:]
+    def g
 
 
 
     void setUp(){
         Gremlin.load()
-        sa = new SA()
 
-        //TODO: groovify
 
-        def g = TinkerGraphFactory.createTinkerGraph()
-        sa.setGraph(g)
-        sa.setOrig(g.v(5))
-        sa.setDest(g.v(1))
+        this.g = TinkerGraphFactory.createTinkerGraph()
 
-        println "setuuupiiiii"
+        this.defaultArgs['graph'] = g
+        this.defaultArgs['follow'] = Constants.INBOUND
+
     }
 
     void testSA(){
+
+        //test basic
+        def args = this.defaultArgs.clone()
+        args['follow'] = Constants.OUTBOUND
+        runSA(args, this.g.v(5), this.g.v(1), 81.0)
+
+
+
+    }
+
+    def runSA (args, orig, dest, expected){
+        //this.sa = new SA(graph: g, follow: Constants.INBOUND)
+        def sa = new SA()
+        args.each{ key, value ->
+            sa.setProperty(key, value)
+        }
+
         def potential
-        def time = Timer.closureBenchmark{potential = this.sa.process()}
+        def time = Timer.closureBenchmark{potential = sa.process(orig, dest)}
 
         println "total time: ${time}"
 
         println "result: ${potential}"
-        assertEquals(potential, 81.0)
+        assertEquals(potential, expected)
+
+
     }
 }

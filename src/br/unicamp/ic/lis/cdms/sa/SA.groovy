@@ -1,6 +1,8 @@
 package br.unicamp.ic.lis.cdms.sa
 
 import com.tinkerpop.gremlin.groovy.Gremlin
+import com.tinkerpop.blueprints.Graph
+import br.unicamp.ic.lis.cdms.util.Constants
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,7 +12,9 @@ import com.tinkerpop.gremlin.groovy.Gremlin
  * To change this template use File | Settings | File Templates.
  */
 class SA {
-    def graph
+    Graph graph
+    String follow = Constants.BOTH
+
     def orig
     def dest
 
@@ -35,8 +39,9 @@ class SA {
     }
 
 
-    float process(){
+    float process(orig, dest){
         Gremlin.load()
+
         print "run forest run!"
         def weightProp = "weight"
         def A = [:].withDefault{0}
@@ -44,24 +49,25 @@ class SA {
         def t = 0.1 //activation threshold
         def d = 0.9 //decay factor
 
-        println "SA - " + this.orig + " --> " + this.dest
+        println "SA - ${orig} --> ${dest} \n Follow = ${this.follow}"
 
         def m = [:].withDefault{0}
         def p = [:]
 
         //def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
 
-        def destid = this.dest.id.toString()
+        def destid = dest.id.toString()
 
         def duration = benchmark {
 
                 A = [:].withDefault{0}
-                A[this.orig] = 100
+                A[orig] = 100
 
-                this.orig.as('start')
+                orig.as('start')
                         .filter{
                             A[it] > t}
                         .transform{
+                    //TODO set DIRECTION
                             def neighbors = it.inE.outV.path().toList()
 
                             def n = neighbors.size()
@@ -81,7 +87,7 @@ class SA {
 
         }
         println "execution took ${duration} ms"
-        return A[this.dest]
+        return A[dest]
 
     }
 
