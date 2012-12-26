@@ -18,17 +18,6 @@ class SA {
     def orig
     def dest
 
-    void setGraph(g){
-        graph = g
-    }
-
-    void setOrig(o){
-        orig = o
-    }
-
-    void setDest(d){
-        dest = d
-    }
 
     def benchmark = { closure ->
         def start, now
@@ -42,7 +31,6 @@ class SA {
     float process(orig, dest){
         Gremlin.load()
 
-        print "run forest run!"
         def weightProp = "weight"
         def A = [:].withDefault{0}
 
