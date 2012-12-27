@@ -12,12 +12,16 @@ import br.unicamp.ic.lis.cdms.util.Constants
  * To change this template use File | Settings | File Templates.
  */
 class SA {
+    //setting class variables with default values
     Graph graph
     String follow = Constants.BOTH
 
     def orig
     def dest
 
+    static {
+        Gremlin.load()
+    }
 
     def benchmark = { closure ->
         def start, now
@@ -29,8 +33,6 @@ class SA {
 
 
     float process(orig, dest){
-        Gremlin.load()
-
         def weightProp = "weight"
         def A = [:].withDefault{0}
 
