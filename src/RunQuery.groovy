@@ -1,7 +1,9 @@
+import com.tinkerpop.blueprints.impls.sail.SailGraph
 import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.gremlin.groovy.Gremlin
-
-//import virtuoso.sesame2.driver.VirtuosoRepository
+import net.fortytwo.sesametools.reposail.RepositorySail
+import org.openrdf.repository.RepositoryConnection
+import virtuoso.sesame2.driver.VirtuosoRepository
 import br.unicamp.ic.lis.cdms.*
 
 
@@ -10,7 +12,7 @@ def getSailConn(){
 	def VIRTUOSO_PORT = 1111;
 	def VIRTUOSO_USERNAME = "dba";
 	def VIRTUOSO_PASSWORD = "dba";
-/*
+
 	def repository = new VirtuosoRepository("jdbc:virtuoso://" + VIRTUOSO_INSTANCE + ":" + VIRTUOSO_PORT, VIRTUOSO_USERNAME, VIRTUOSO_PASSWORD);
 	repository.initialize()
 
@@ -21,7 +23,7 @@ def getSailConn(){
 	
 	sc = sail.getConnection();
 
-	sc;*/
+	sc;
 }
 
 def getSail(){
@@ -29,13 +31,13 @@ def getSail(){
 	def VIRTUOSO_PORT = 1111;
 	def VIRTUOSO_USERNAME = "dba";
 	def VIRTUOSO_PASSWORD = "dba";
-/*
+
 	def repository = new VirtuosoRepository("jdbc:virtuoso://" + VIRTUOSO_INSTANCE + ":" + VIRTUOSO_PORT, VIRTUOSO_USERNAME, VIRTUOSO_PASSWORD);
 	repository.initialize()
 
 	def sail = new RepositorySail(repository, false);
 	
-	sail;*/
+	sail;
 }
 
 def getGraph(){
@@ -102,7 +104,7 @@ def RunQuery(args){
 
 	switch ( language ) {
 		case "sparql":
-/*
+
 			def VIRTUOSO_INSTANCE = "gaponga";
 			def VIRTUOSO_PORT = 1111;
 			def VIRTUOSO_USERNAME = "dba";
@@ -120,7 +122,7 @@ def RunQuery(args){
 			g = new SailGraph(sail)
 			
 			qp = new SparqlQueryProc(g, sc, rc)
-			break   */
+			break
 		case "cypher":
 			qp = new CypherPlusQueryProc(db_path)
 			//nc.shutdown();

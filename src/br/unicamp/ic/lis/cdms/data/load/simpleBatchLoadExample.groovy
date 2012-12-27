@@ -11,7 +11,7 @@ ExpandoMetaClass.enableGlobally()
 PropertyContainer.metaClass.getProperty = {name -> delegate.getProperty(name)}
 PropertyContainer.metaClass.setProperty = {name, val -> delegate.setProperty(name, val)}
 
-dbDir = "/lishome-ext/luizcelso/graphdbs/symdia2"
+dbDir = "/lishome-ext/luizcelso/graphdbs/hello"
 FileUtils.deleteRecursively( new File(dbDir) );
 
 //db = new EmbeddedGraphDatabase(dbdir)
@@ -24,6 +24,7 @@ symdiaIdx = indexProvider.nodeIndex( "symdia", MapUtil.stringMap( "type", "exact
 n1 = ["message":"Hello", "type":"greeting"]
 def node1 = inserter.createNode(100,n1)
 symdiaIdx.add(100,n1)
+
 
 n2 = ["message":"world", "type":"planet"]
 def node2 = inserter.createNode(101,n2)
@@ -39,8 +40,11 @@ inserter.shutdown();
 
 // try it out from a normal db
 GraphDatabaseService db = new EmbeddedGraphDatabase(dbDir);
+db.allNodes.each{println it}
 Node mNode = db.getNodeById( 100 );
 Node cNode = mNode.getSingleRelationship( knows, Direction.OUTGOING )
 		.getEndNode();
+
+println mNode.getProperty( "type" )
 assert "greeting" == mNode.getProperty( "type" )
 db.shutdown();
