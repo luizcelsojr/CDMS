@@ -35,6 +35,7 @@ class SATest extends GroovyTestCase{
 
         this.g = TinkerGraphFactory.createTinkerGraph()
 
+        //do not change!!!!
         this.defaultArgs['graph'] = g
         this.defaultArgs['direction'] = Constants.OUTBOUND
         this.defaultArgs['c'] = 2

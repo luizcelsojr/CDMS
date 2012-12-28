@@ -39,6 +39,8 @@ class SA {
 
     float process(orig, dest){
 
+        //TODO: parametrize those
+        //TODO: use float numbers
         def A = [:].withDefault{0}
 
         def t = 0.1 //activation threshold
