@@ -14,7 +14,12 @@ import br.unicamp.ic.lis.cdms.util.Constants
 class SA {
     //setting class variables with default values
     Graph graph
-    String follow = Constants.BOTH
+    int c = 2 //maximum radius of the SA network
+    String direction = Constants.BOTH //which direction the SA steps must follow
+    Boolean weighted = false //whether edge weights must be multiplied to degrade the signal
+    String weightProp = "weight" //property with containing edge weights
+    Boolean dividePotential = false // whether activation potential will be divided among neighbors (true) or passed integrally (false)
+
 
     def orig
     def dest
@@ -33,13 +38,13 @@ class SA {
 
 
     float process(orig, dest){
-        def weightProp = "weight"
+
         def A = [:].withDefault{0}
 
         def t = 0.1 //activation threshold
         def d = 0.9 //decay factor
 
-        println "SA - ${orig} --> ${dest} \n Follow = ${this.follow}"
+        println "SA - ${orig} --> ${dest} \n Follow = ${this.direction}"
 
         def m = [:].withDefault{0}
         def p = [:]
@@ -57,23 +62,25 @@ class SA {
                         .filter{
                             A[it] > t}
                         .transform{
-                    //TODO set DIRECTION
-                            def neighbors = it.inE.outV.path().toList()
+                            def neighbors = []
+                            if (this.direction != Constants.OUTBOUND) neighbors.addAll(it.inE.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
+                            if (this.direction != Constants.INBOUND) neighbors.addAll(it.outE.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
 
-                            def n = neighbors.size()
+                            def n = neighbors.size().toFloat()
                             //TODO remove (after new benchmarks)
                             if (n > 1000 | n == 0) {//println "vaza ${it}.....";
                                 return []}
-                            def Atransfer = (A[it] * d)
+                            def Atransfer = (this.dividePotential) ? (A[it] * d)/n : (A[it] * d)
                             neighbors.each{
-                                A[it[-1]] += Atransfer * it[1].getProperty(weightProp).toFloat() // it is the path, it[-1] is the outV
+                                // it is the path, it[-1] is the outV
+                                A[it[-1]] += (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
                             }
                             if (n) A[it] = 0
                             //println "A ${A}"
                             neighbors.collect{it[-1]}
                         }.scatter
                         .filter{it.id!=destid}
-                        .loop('start'){it.loops<=3}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
+                        .loop('start'){it.loops<=this.c}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
 
         }
         println "execution took ${duration} ms"

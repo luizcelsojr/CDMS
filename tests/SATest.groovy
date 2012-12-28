@@ -36,17 +36,31 @@ class SATest extends GroovyTestCase{
         this.g = TinkerGraphFactory.createTinkerGraph()
 
         this.defaultArgs['graph'] = g
-        this.defaultArgs['follow'] = Constants.INBOUND
+        this.defaultArgs['direction'] = Constants.OUTBOUND
+        this.defaultArgs['c'] = 2
+        this.defaultArgs['weighted'] = false
+        this.defaultArgs['weightProp'] = 'weight'
+        this.defaultArgs['dividePotential'] = false
 
     }
 
     void testSA(){
 
         //test basic
-        def args = this.defaultArgs.clone()
-        args['follow'] = Constants.OUTBOUND
-        runSA(args, this.g.v(5), this.g.v(1), 81.0)
+        def args
 
+        println "*** dividing potential unweighted SA ***"
+        args = this.defaultArgs.clone()
+        args['direction'] = Constants.OUTBOUND
+        args['dividePotential'] = true
+        runSA(args, this.g.v(1), this.g.v(5), ((((100.0/3.0)*0.9)/2.0)*0.9).floatValue())
+
+        println "*** simple weighted SA ***"
+        args = this.defaultArgs.clone()
+        args['c'] = 1
+        args['direction'] = Constants.INBOUND
+        args['weighted'] = true
+        runSA(args, this.g.v(3), this.g.v(4), 36.0)
 
 
     }
@@ -64,7 +78,7 @@ class SATest extends GroovyTestCase{
         println "total time: ${time}"
 
         println "result: ${potential}"
-        assertEquals(potential, expected)
+        assertEquals(expected, potential)
 
 
     }
