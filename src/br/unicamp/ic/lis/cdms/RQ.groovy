@@ -73,7 +73,7 @@ def RunQ(args){
     // Determine formatter.
     def language = "cypher"  // Default.
     def file = "/home/lis/luizcelso/phd/workspace/GIRDB/queries/query-cypher-rel-symdia_cases.txt"  // Default.
-    def db_path = "/lishome-ext/luizcelso/graphdbs/symdia_cases"
+    def db_path = "/lishome-ext/luizcelso/graphdbs/symdia_cases2"
 
     if (options.f) {
         file = options.f
