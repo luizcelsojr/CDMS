@@ -26,19 +26,20 @@ select * where{
 RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
 """
     ranking{
-        metric1{
-            type = "relevance"
-            weight = 2
-            orig{
-                type = "variable"
-                label = "?a"
-            }
-            dest{
-                type = "node"
-                id = "http://data.linkedmdb.org/resource/director/8501"
-            }
+        metric (type: "relevance", weight: 2){
+            orig (type: "variable", label: "?a")
+            dest(type: "node", id: "http://data.linkedmdb.org/resource/director/8501")
         }
-        metric2{
+        metric (type: "connectivity", weight: 1){
+            orig (type: "variable", label: "?a")
+            dest(type: "node", id: "http://data.linkedmdb.org/resource/director/8501")
+        }
+    }
+}
+
+
+/*
+          metric2{
             type = "connectivity"
             weight = 1
             orig{
@@ -50,5 +51,5 @@ RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
                 id = "http://data.linkedmdb.org/resource/director/8501"
             }
         }
-    }
-}
+
+*/
