@@ -1,3 +1,5 @@
+import br.unicamp.ic.lis.cdms.util.Constants
+
 def builder = NodeBuilder.newInstance()
 
 
@@ -12,14 +14,18 @@ RANK BY 1 WRELEVANCE (n,_117)
 --RANK BY WCONNECTIVITY (n,_117)
 """
     ranking{
-        metric (type: "Relevance", weight: 2, weighted: true){
+        metric (type: "Relevance", weight: 1, weighted: true, weightProp: "Weight", direction: Constants.INBOUND){
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         }
-        /*metric (type: "Connectivity", weight: 1, weighted: true){
+        /*metric (type: "Relevance", weight: 2, weighted: true, weightProp: "Weight", direction: Constants.INBOUND){
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         } */
+        metric (type: "Connectivity", weight: 2, weighted: true, weightProp: "Weight", direction: Constants.INBOUND){
+            orig (type: "variable", label: "n")
+            dest(type: "node", id: "117")
+        }
     }
 }
 

@@ -14,6 +14,8 @@ import br.unicamp.ic.lis.cdms.util.Constants
 class SA {
     //setting class variables with default values
     Graph graph
+    String type = '' // metric type... should not be used here but its existence makes SA constructor simpler
+    Float weight = 1.0 // weight of the metric.. same as above
     int c = 2 //maximum radius of the SA network
     String direction = Constants.BOTH //which direction the SA steps must follow
     Boolean weighted = false //whether edge weights must be multiplied to degrade the signal
@@ -28,14 +30,12 @@ class SA {
         Gremlin.load()
     }
 
-    def benchmark = { closure ->
-        def start, now
-        start = System.currentTimeMillis()
-        closure.call()
-        now = System.currentTimeMillis()
-        now - start
+    SA(context, dividePotential){
+        context.attributes().each{key, value ->
+            this."$key" = value
+        }
+        this.dividePotential = dividePotential
     }
-
 
     float process(orig, dest){
 
@@ -46,7 +46,7 @@ class SA {
         def t = 0.1 //activation threshold
         def d = 0.9 //decay factor
 
-        println "SA - ${orig} --> ${dest} \n Follow = ${this.direction}"
+        //println "SA - ${orig} --> ${dest} \n Follow = ${this.direction}"
 
         def m = [:].withDefault{0}
         def p = [:]
@@ -55,12 +55,11 @@ class SA {
 
         def destid = dest.id.toString()
 
-        def duration = benchmark {
 
-                A = [:].withDefault{0}
-                A[orig] = 100
+        A = [:].withDefault{0}
+        A[orig] = 100
 
-                orig.as('start')
+        orig.as('start')
                         .filter{
                             A[it] > t}
                         .transform{
@@ -84,8 +83,7 @@ class SA {
                         .filter{it.id!=destid}
                         .loop('start'){it.loops<=this.c}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
 
-        }
-        println "execution took ${duration} ms"
+
         return A[dest]
 
     }

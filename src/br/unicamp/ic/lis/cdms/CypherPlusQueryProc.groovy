@@ -1,6 +1,7 @@
 package br.unicamp.ic.lis.cdms
 
 import br.unicamp.ic.lis.cdms.queryproc.Parser
+import br.unicamp.ic.lis.cdms.sa.SA
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
@@ -51,57 +52,38 @@ class CypherPlusQueryProc{
             this.totalWeight += it.@weight.toFloat()
         }
 
-		println("cypher: " + cypher)
+		println("cypher: " + this.parsedQuery.regular[0].value().trim())
 		println "this.rankings = ${this.parsedQuery.ranking}"
-//		System.exit(1)
-		
-
 	}
 
 	def processQuery(query){
-
-
 		parseQuery(query)
-
-		//processCypher()
 
         this.parsedQuery.ranking.metric.each{
             processCypher()
             this."processQuery${it.@type}"(it)
         }
-/*
-		this.rankings.each{ key, value ->
-			processCypher()
-			switch(key.toLowerCase()){
-				case "relevance":
-					processQueryRelevance()
-					break
-				case "wrelevance":
-					processQueryWRelevance(this.rankings[key])
-					break
-				case "connectivity":
-					processQueryConnectivity()
-					break
-				case "wconnectivity":
-					processQueryWConnectivity(this.rankings[key])
-					break
-				case "reputation":
-					processQueryReputation()
-					break
-				case "influence":
-					processQueryInfluence()
-					break
 
-				default:
-					println	"Invalid Ranking Operation"
-			}
-		}
-*/
 		def m = this.Results.sort{a,b -> b.value <=> a.value}
 		//println "m: ${m}"
 		m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).map().Label}, ${value}"}
 		
 	}
+
+    def getDest(context){
+        def destid = context.dest[0].@id
+        return this.graph.v(destid)
+    }
+
+    def getOrigs(context){
+        def origs = []
+        while(this.regResults.hasNext()) {
+            def v = this.graph.v(this.regResults.next().getProperty(context.orig[0].@label).getId());
+            origs.add(v);
+
+        }
+        return origs
+    }
 
 	def processQueryRelevance(context){
 		Gremlin.load()
@@ -109,187 +91,65 @@ class CypherPlusQueryProc{
 
 
 		if (context.orig[0].@type == 'variable' && context.dest[0].@type == 'node'){ //first param is variable, second is node/id
-			def destid = context.dest[0].@id
-			def dest = this.graph.v(destid)
-			def origs = []
-            def weightProp = "Weight"
+            def dest = getDest(context)
+            def origs = getOrigs(context)
 
-
-			
-			while(this.regResults.hasNext()) {
-				def v = this.graph.v(this.regResults.next().getProperty(context.orig[0].@label).getId());
-				origs.add(v);
-				
-			}
-
-
-			def A = [:].withDefault{0}
 			def R = [:] //results
 			def maxResult = 0.0
+            def result = 0.0
 
-			
-			def t = 0.1 //activation threshold
-			def d = 0.9 //decay factor
+            def sa = new SA(context, true)
 
-			println "Relevance - " + origs + " --> " + dest
+            println "Relevance - " + origs + " --> " + dest
 
-			def m = [:].withDefault{0}
-			def p = [:]
-			
-			def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
-			
-			//def paths = origs._().both.simplePath().loop(2){it.loops<=3}{(it.object.id==dest.id)}.path().toList()
+            origs.each{
+                result = sa.process(it, dest)
+                if (result > maxResult) maxResult = result
+                R[it] = result
+            }
+            def normWeight = context.@weight/this.totalWeight
 
-			def duration = benchmark {
-				origs.each{
-						A = [:].withDefault{0}
-						A[it] = 100
-						
-						it.as('start')
-							.filter{
-									//if (A[it] <= t) println "No no for ${it} with ${A[it]}";
-									A[it] > t}
-							.transform{
-								def neighbors = it.inE.outV.path().toList()
-								//println neighbors[0][1].Weight.toFloat()
-								//System.exit(1)
-								
-								def n = neighbors.size()
-								if (n > 1000 | n == 0) {//println "vaza ${it}.....";
-									return []}
-								def Atransfer = (A[it] * d)/n
-								neighbors.each{
-									A[it[-1]] += Atransfer * it[1].getProperty(weightProp).toFloat() // it is the path, it[-1] is the outV
-								}
-								if (n) A[it] = 0
-								//println "A ${A}"
-								neighbors.collect{it[-1]}
-							}.scatter
-							.filter{it.id!=destid}
-							.loop('start'){it.loops<=3}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
-							
-							//println "vai ${dest} ${A[dest]}"; if (it.object.id==destid) println "yeahhhhh! ${A[dest]} ${it.object}";
-							//					.except([dest])
-							
-						if (A[dest] > maxResult) maxResult = A[dest]
-						
-						R[it] = A[dest]
-						//println A
-						//println R
-						//System.exit(1)
-
-				}
-				
-				def normWeight = context.@weight/this.totalWeight
-				
-				R.each{ key, value ->
-					this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
-				}
-
-
-			}
-			println "execution took ${duration} ms"
+            R.each{ key, value ->
+                this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
+            }
 
 		}
 		else{println "Invalid parameters (" + params + ")"}
 	}
 
-	def processQueryWConnectivity(context){
-		Gremlin.load()
-		println "rank: WCONN params: "  + context.params;
-		def plist = context.params.split(",").collect{it.trim()}
-		
-
-		if (!plist[0].startsWith("_") && (plist[1].startsWith("_"))){ //first param is variable, second is id
-			def destid = plist[1][1..-1] //remove <> from id
-			def dest = this.graph.v(destid)
-			def origs = []
-			
-			while(this.regResults.hasNext()) {
-				def v = this.graph.v(this.regResults.next().getProperty(plist[0]).getId());
-				origs.add(v);
-				
-			}
-			
-//def g = TinkerGraphFactory.createTinkerGraph()
-//origs = [g.v(4), g.v(1), g.v(5), g.v(3), g.v(6)]
-//dest = g.v(2)
+    def processQueryConnectivity(context){
+        Gremlin.load()
+        println "rank: weight=${context.@weight} CONN context: " + context;
 
 
-			def A = [:].withDefault{0}
-			def R = [:] //results
-			def maxResult = 0.0
-			
-			//origs.each{A[it] = 1}
-			
-			def t = 0.1 //activation threshold
-			def d = 0.9 //decay factor
+        if (context.orig[0].@type == 'variable' && context.dest[0].@type == 'node'){ //first param is variable, second is node/id
+            def dest = getDest(context)
+            def origs = getOrigs(context)
 
-			println "Relevance - " + origs + " --> " + dest
+            def R = [:] //results
+            def maxResult = 0.0
+            def result = 0.0
 
-			def m = [:].withDefault{0}
-			def p = [:]
-			
-			def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
-			
-			//def paths = origs._().both.simplePath().loop(2){it.loops<=3}{(it.object.id==dest.id)}.path().toList()
+            def sa = new SA(context, false)
 
-			def duration = benchmark {
-				origs.each{
+            println "Connectivity - " + origs + " --> " + dest
 
-						A = [:].withDefault{0}
-						A[it] = 100
-						
-						it.as('start')
-							.filter{
-									//if (A[it] <= t) println "No no for ${it} with ${A[it]}";
-									A[it] > t}
-							.transform{
-								def neighbors = it.inE.outV.path().toList()
-								//println neighbors[0][1].Weight.toFloat()
-								//System.exit(1)
-								
-								def n = neighbors.size()
-								if (n > 1000 | n == 0) {//println "vaza ${it}.....";
-									return []}
-								def Atransfer = (A[it] * d)
-								neighbors.each{
-									A[it[-1]] += Atransfer * it[1].Weight.toFloat() // it is the path, it[-1] is the outV
-								}
-								if (n) A[it] = 0
-								//println "A ${A}"
-								neighbors.collect{it[-1]}
-							}.scatter
-							.filter{it.id!=destid}
-							.loop('start'){it.loops<=3}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
-							
-							//println "vai ${dest} ${A[dest]}"; if (it.object.id==destid) println "yeahhhhh! ${A[dest]} ${it.object}";
-							//					.except([dest])
-							
-						if (A[dest] > maxResult) maxResult = A[dest]
-						
-						R[it] = A[dest]
-						//println A
-						//println R
-						//System.exit(1)
+            origs.each{
+                result = sa.process(it, dest)
+                if (result > maxResult) maxResult = result
+                R[it] = result
+            }
+            def normWeight = context.@weight/this.totalWeight
 
-				}
+            R.each{ key, value ->
+                this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
+            }
 
-				
-				def normWeight = context.weight/this.totalWeight
-				
-				R.each{ key, value ->
-					this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
-				}
+        }
+        else{println "Invalid parameters (" + params + ")"}
+    }
 
 
-			}
-			println "execution took ${duration} ms"
-
-		}
-		else{println "Invalid parameters (" + params + ")"}
-	}
-	
 	def processQueryRelvance_Old(){
 		Gremlin.load()
 		println "rank: RELEVANCE params: " + params;

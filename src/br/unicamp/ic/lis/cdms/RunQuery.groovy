@@ -1,5 +1,6 @@
 package br.unicamp.ic.lis.cdms
 
+import br.unicamp.ic.lis.cdms.benchmark.Timer
 import br.unicamp.ic.lis.cdms.queryproc.Parser
 import com.tinkerpop.blueprints.impls.sail.SailGraph
 import com.tinkerpop.blueprints.impls.tg.*
@@ -125,7 +126,9 @@ def RunQ(args){
 	}
 
     query = file //temporary
-	qp.processQuery(query)
+
+    def time = Timer.closureBenchmark{qp.processQuery(query)}
+    println "total time: ${time}"
 
 
 }
