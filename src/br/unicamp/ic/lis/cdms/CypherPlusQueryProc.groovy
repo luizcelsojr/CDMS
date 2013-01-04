@@ -73,6 +73,10 @@ class CypherPlusQueryProc{
 
 	def processQuery(query){
 
+        query = query.regular + query.rank
+        println query
+        System.exit(1)
+
 		parseQuery(query)
 
 		//processCypher()

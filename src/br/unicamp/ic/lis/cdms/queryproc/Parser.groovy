@@ -8,8 +8,15 @@ package br.unicamp.ic.lis.cdms.queryproc
  * To change this template use File | Settings | File Templates.
  */
 class Parser {
-    def parse(){
-        def queryConfig = ""
+    def parse(query){ //TODO: query should be the query string, not a script file as it is now
+        def queryConfig
+        def shell = new GroovyShell()
+
+
+
+        def file = new File(query)
+
+        queryConfig = shell.evaluate(file.text)
         return queryConfig
     }
 }

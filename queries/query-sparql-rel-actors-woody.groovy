@@ -1,16 +1,7 @@
-
-/**
- * Created with IntelliJ IDEA.
- * User: luizcelso
- * Date: 1/2/13
- * Time: 1:04 PM
- * To change this template use File | Settings | File Templates.
- */
-
 def builder = NodeBuilder.newInstance()
 
 
-builder.query {
+builder.query  (type: "cypher") {
     regular  """
 PREFIX movie: <http://data.linkedmdb.org/resource/movie/>
 select * where{

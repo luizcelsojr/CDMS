@@ -12,6 +12,8 @@ package br.unicamp.ic.lis.cdms
 
 def shell = new GroovyShell()
 
+
+
 def file = new File('/Users/luizcelso/workspace/CDMS/queries/query-sparql-rel-actors-woody.groovy')
 
 def query = shell.evaluate(file.text)

@@ -1,5 +1,6 @@
 package br.unicamp.ic.lis.cdms
 
+import br.unicamp.ic.lis.cdms.queryproc.Parser
 import com.tinkerpop.blueprints.impls.sail.SailGraph
 import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.gremlin.groovy.Gremlin
@@ -72,8 +73,8 @@ def RunQ(args){
 
     // Determine formatter.
     def language = "cypher"  // Default.
-    def file = '/Users/luizcelso/workspace/CDMS/queries/query-cypher-rel-symdia_cases.txt'  // Default.
-    def db_path = "/lishome-ext/luizcelso/graphdbs/symdia_cases2"
+    def file = '/Users/luizcelso/workspace/CDMS/queries/query-cypher-rel-symdia_cases.groovy'  // Default.
+    def db_path = "/Users/luizcelso/db/symdia_cases2"
 
     if (options.f) {
         file = options.f
@@ -91,14 +92,12 @@ def RunQ(args){
         query = extraArguments.join(' ')
     }
 
+    def parser = new Parser()
 
+    query = file //TODO: change this when we get a real parser
 
+    def parsedQuery = parser.parse(query)
 
-    myFile = new File(file)
-
-    if (query == "") {
-        for (line in myFile) {query+="\n"+line}
-    }
 
     def qp
 
