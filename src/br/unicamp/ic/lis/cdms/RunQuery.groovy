@@ -92,11 +92,7 @@ def RunQ(args){
         query = extraArguments.join(' ')
     }
 
-    def parser = new Parser()
 
-    query = file //TODO: change this when we get a real parser
-
-    def parsedQuery = parser.parse(query)
 
 
     def qp
@@ -128,7 +124,7 @@ def RunQ(args){
 			break
 	}
 
-
+    query = file //temporary
 	qp.processQuery(query)
 
 

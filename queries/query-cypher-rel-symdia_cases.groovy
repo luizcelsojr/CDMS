@@ -12,14 +12,14 @@ RANK BY 1 WRELEVANCE (n,_117)
 --RANK BY WCONNECTIVITY (n,_117)
 """
     ranking{
-        metric (type: "relevance", weight: 2, weighted: true){
+        metric (type: "Relevance", weight: 2, weighted: true){
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         }
-        metric (type: "connectivity", weight: 1, weighted: true){
+        /*metric (type: "Connectivity", weight: 1, weighted: true){
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
-        }
+        } */
     }
 }
 

@@ -1,5 +1,6 @@
 package br.unicamp.ic.lis.cdms
 
+import br.unicamp.ic.lis.cdms.queryproc.Parser
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
@@ -17,6 +18,7 @@ class CypherPlusQueryProc{
 	def neoGraphDB, graph
 	def regResults //results from regular query
 	def Results = [:].withDefault{0.0} //results from ranking
+    def parsedQuery
 
 	def benchmark = { closure ->
 		def start, now
@@ -40,32 +42,17 @@ class CypherPlusQueryProc{
 
 	
 	def parseQuery(query){
-		def rankby =/RANK BY ([1-9]) ([a-zA-Z]+) \((.*)\)/
-		def comment =/--.*/
-		def matcher
 
-		for (line in query.split("\n")){
-			switch (line) {
-				case ~rankby:
-					matcher = ( line =~ rankby )
-					if (matcher.size()){
-						def metric = matcher[0][2]
-						def weight = matcher[0][1].toFloat()
-						this.rankings[metric] = ["weight":weight, "params":matcher[0][3]]
-						this.totalWeight += weight
-						//this.rank = matcher[0][1];
-						//this.params = matcher[0][2];
-					}
-					break
-				case ~comment:
-					break
-				default:
-					this.cypher += line + "\n"
-			}
-		}
+        def parser = new Parser()
+
+        this.parsedQuery = parser.parse(query)
+
+        this.parsedQuery.ranking.metric.each{
+            this.totalWeight += it.@weight.toFloat()
+        }
 
 		println("cypher: " + cypher)
-		println "this.rankings = ${this.rankings}"
+		println "this.rankings = ${this.parsedQuery.ranking}"
 //		System.exit(1)
 		
 
@@ -73,14 +60,16 @@ class CypherPlusQueryProc{
 
 	def processQuery(query){
 
-        query = query.regular + query.rank
-        println query
-        System.exit(1)
 
 		parseQuery(query)
 
 		//processCypher()
 
+        this.parsedQuery.ranking.metric.each{
+            processCypher()
+            this."processQuery${it.@type}"(it)
+        }
+/*
 		this.rankings.each{ key, value ->
 			processCypher()
 			switch(key.toLowerCase()){
@@ -107,163 +96,20 @@ class CypherPlusQueryProc{
 					println	"Invalid Ranking Operation"
 			}
 		}
-		
+*/
 		def m = this.Results.sort{a,b -> b.value <=> a.value}
 		//println "m: ${m}"
 		m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).map().Label}, ${value}"}
 		
 	}
 
-	def processQueryInfluence(){
-		println "rank: INFLUENCE params: " + params;
-		def plist = this.params.split(",").collect{it.trim()}
-
-		if (plist[0].startsWith("?")){ //first param is variable
-			def origs = []
-
-			while(this.regResults.hasNext()) { def v = this.neoGraphDB.getNodeById(this.regResults.next().getValue(plist[0][1..-1]).getLocalName()); origs.add(v);}
-			println "Influence - " + origs
-
-			def m = [:].withDefault{1}
-			origs._().out.simplePath().loop(2){it.loops<=3}{(it.object.out.count() == 0)}.path().toList().each{m[it[0]]++}
-
-			m = m.sort{a,b -> b.value <=> a.value}[0..9]
-			m.each{if (it.key in origs) {println(it)}}
-			//origs.each{println it.id + " = " + m[it]}
-		}
-		else{println "Invalid parameters (" + params + ")"}
-	}
-
-	def processQueryReputation(){
+	def processQueryRelevance(context){
 		Gremlin.load()
-		println "rank: REPUTATION params: " + params;
-		def plist = this.params.split(",").collect{it.trim()}
-		
-
-		if (!plist[0].startsWith("_")){ //first param is variable
-			def origs = []
-
-			while(this.regResults.hasNext()) { def v = this.graph.v(this.regResults.next().getProperty(plist[0]).getId()); origs.add(v);}
-			println "Reputation - " + origs
-
-			def m = [:].withDefault{1}
-			//println origs.class.name
-			//return 
-
-			origs.reverse()._().gather.scatter.transform{
-					def rank = m[it];
-	//println "ahhhh " + it.class.name;
-					def neighbors = it.both.toList();
-					def degree = neighbors.size();
-					neighbors.each {
-						m[it] = m[it] + (rank/degree);
-					}
-					neighbors;
-				}.scatter.range(0,5000).loop(5){true}.iterate()
-
-			
-			
-			m = m.sort{a,b -> b.value <=> a.value} //[0..9]
-			
-			//println m
-			//return
-			
-			m.each{if (it.key in origs) {println(" " + it.key.map() + " " + it)}}
-			//origs.each{println it.id + " = " + m[it]}
-		}
-		else{println "Invalid parameters (" + params + ")"}
-	}
-
-	def processQueryRelevance(){
-		Gremlin.load()
-		println "rank: RELEVANCE params: " + params;
-		def plist = this.params.split(",").collect{it.trim()}
-		
-
-		if (!plist[0].startsWith("_") && (plist[1].startsWith("_"))){ //first param is variable, second is id
-			def destid = plist[1][1..-1] //remove <> from id
-			def dest = this.graph.v(destid)
-			def origs = []
-			
-			while(this.regResults.hasNext()) {
-				def v = this.graph.v(this.regResults.next().getProperty(plist[0]).getId());
-				origs.add(v);
-				
-			}
-
-//def g = TinkerGraphFactory.createTinkerGraph()
-//origs = [g.v(4), g.v(1), g.v(5), g.v(3), g.v(6)]
-//dest = g.v(2)
+		println "rank: weight=${context.@weight} RELEVANCE context: " + context;
 
 
-			def A = [:].withDefault{0}
-			def R = [:] //results
-			
-			//origs.each{A[it] = 1}
-			
-			def t = 0.1 //activation threshold
-			def d = 0.025 //decay factor
-			
-			println "Relevance - " + origs + " --> " + dest
-
-			def m = [:].withDefault{0}
-			def p = [:]
-			
-			def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
-			
-			//def paths = origs._().both.simplePath().loop(2){it.loops<=3}{(it.object.id==dest.id)}.path().toList()
-
-			def duration = benchmark {
-				origs.each{
-					if (!R[it]){
-						A = [:].withDefault{0}
-						A[it] = 100
-						
-						it.as('start')
-							.filter{
-									//if (A[it] <= t) println "No no for ${it} with ${A[it]}";
-									A[it] > t}
-							.transform{
-								def neighbors = it.both.toList()
-								def n = neighbors.size()
-								if (n > 1000 | n == 0) {//println "vaza ${it}....."; 
-									return []}
-								def Atransfer = (A[it] * d)/n
-								neighbors.each{
-									A[it] += Atransfer
-								}
-								if (n) A[it] = 0
-								//println "A ${A}"
-								neighbors
-							}.scatter
-							.filter{it.id!=destid}
-							.loop('start'){it.loops<=2}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
-							
-							//println "vai ${dest} ${A[dest]}"; if (it.object.id==destid) println "yeahhhhh! ${A[dest]} ${it.object}";
-							//					.except([dest]) 
-						
-						R[it] = A[dest]
-						//println R
-					} 
-				}
-				m = R.sort{a,b -> b.value <=> a.value}
-				//println "m: ${m}"
-				m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).map().label}, ${value}"}
-			}
-			println "execution took ${duration} ms"
-
-		}
-		else{println "Invalid parameters (" + params + ")"}
-	}
-
-	def processQueryWRelevance(context){
-		Gremlin.load()
-		println "rank: weight=${context.weight} WRELEVANCE params: " + context.params;
-		def plist = context.params.split(",").collect{it.trim()}
-		
-//System.exit(1)
-		if (!plist[0].startsWith("_") && (plist[1].startsWith("_"))){ //first param is variable, second is id
-			def destid = plist[1][1..-1] //remove <> from id
+		if (context.orig[0].@type == 'variable' && context.dest[0].@type == 'node'){ //first param is variable, second is node/id
+			def destid = context.dest[0].@id
 			def dest = this.graph.v(destid)
 			def origs = []
             def weightProp = "Weight"
@@ -271,23 +117,16 @@ class CypherPlusQueryProc{
 
 			
 			while(this.regResults.hasNext()) {
-				def v = this.graph.v(this.regResults.next().getProperty(plist[0]).getId());
+				def v = this.graph.v(this.regResults.next().getProperty(context.orig[0].@label).getId());
 				origs.add(v);
 				
 			}
 
 
-//def g = TinkerGraphFactory.createTinkerGraph()
-//origs = [g.v(5)]
-//dest = g.v(1)
-//destid = dest.id.toString()
-//weightProp = "weight"
-
 			def A = [:].withDefault{0}
 			def R = [:] //results
 			def maxResult = 0.0
-			
-			//origs.each{A[it] = 1}
+
 			
 			def t = 0.1 //activation threshold
 			def d = 0.9 //decay factor
@@ -341,7 +180,7 @@ class CypherPlusQueryProc{
 
 				}
 				
-				def normWeight = context.weight/this.totalWeight
+				def normWeight = context.@weight/this.totalWeight
 				
 				R.each{ key, value ->
 					this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
@@ -494,14 +333,77 @@ class CypherPlusQueryProc{
 		else{println "Invalid parameters (" + params + ")"}
 	}
 
-	def processCypher() {
+
+    def processQueryInfluence(){
+        println "rank: INFLUENCE params: " + params;
+        def plist = this.params.split(",").collect{it.trim()}
+
+        if (plist[0].startsWith("?")){ //first param is variable
+            def origs = []
+
+            while(this.regResults.hasNext()) { def v = this.neoGraphDB.getNodeById(this.regResults.next().getValue(plist[0][1..-1]).getLocalName()); origs.add(v);}
+            println "Influence - " + origs
+
+            def m = [:].withDefault{1}
+            origs._().out.simplePath().loop(2){it.loops<=3}{(it.object.out.count() == 0)}.path().toList().each{m[it[0]]++}
+
+            m = m.sort{a,b -> b.value <=> a.value}[0..9]
+            m.each{if (it.key in origs) {println(it)}}
+            //origs.each{println it.id + " = " + m[it]}
+        }
+        else{println "Invalid parameters (" + params + ")"}
+    }
+
+    def processQueryReputation(){
+        Gremlin.load()
+        println "rank: REPUTATION params: " + params;
+        def plist = this.params.split(",").collect{it.trim()}
+
+
+        if (!plist[0].startsWith("_")){ //first param is variable
+            def origs = []
+
+            while(this.regResults.hasNext()) { def v = this.graph.v(this.regResults.next().getProperty(plist[0]).getId()); origs.add(v);}
+            println "Reputation - " + origs
+
+            def m = [:].withDefault{1}
+            //println origs.class.name
+            //return
+
+            origs.reverse()._().gather.scatter.transform{
+                def rank = m[it];
+                //println "ahhhh " + it.class.name;
+                def neighbors = it.both.toList();
+                def degree = neighbors.size();
+                neighbors.each {
+                    m[it] = m[it] + (rank/degree);
+                }
+                neighbors;
+            }.scatter.range(0,5000).loop(5){true}.iterate()
+
+
+
+            m = m.sort{a,b -> b.value <=> a.value} //[0..9]
+
+            //println m
+            //return
+
+            m.each{if (it.key in origs) {println(" " + it.key.map() + " " + it)}}
+            //origs.each{println it.id + " = " + m[it]}
+        }
+        else{println "Invalid parameters (" + params + ")"}
+    }
+
+
+    def processCypher() {
 		
 		ExpandoMetaClass.enableGlobally()
 		Map.metaClass.getProperty = {name -> delegate.get(name).get()}
 		//Map2.metaClass.setProperty = {name, val -> delegate.setProperty(name, val)}
 		
 		def engine = new ExecutionEngine( this.neoGraphDB );
-		this.regResults = engine.execute( this.cypher );
+
+		this.regResults = engine.execute(this.parsedQuery.regular[0].value().trim());
 		
 		return
 		//println( this.regResults );
