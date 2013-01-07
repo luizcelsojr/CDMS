@@ -140,7 +140,7 @@ RunQ(args)
 /*
   
 -l sparql -f /Users/luizcelso/workspace/CDMS/queries/query-sparql-rel-actors-woody.groovy
--l cypher -f /Users/luizcelso/workspace/CDMS/queries/query-cypher-rec.txt -d /lishome-ext/luizcelso/graphdbs/fb_likes_copy
+-l cypher -f /Users/luizcelso/workspace/CDMS/queries/query-cypher-rel-symdia_cases.groovy -d /Users/luizcelso/db/symdia_cases2
 
 
 java -jar ~/Dropbox/workspace/GIRDB/target/GIRDB-0.0.1-SNAPSHOT.jar -l cypher -f /home/lis/luizcelso/phd/workspace/GIRDB/queries/query-cypher-rel-symdia_cases.txt -d /lishome-ext/luizcelso/graphdbs/symdia_cases

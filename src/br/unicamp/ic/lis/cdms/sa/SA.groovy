@@ -84,6 +84,7 @@ class SA {
                             //println "A ${A}"
                             neighbors.collect{it[-1]}
                         }.scatter
+                .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
                         .filter{it.id!=destid}
                         .loop('start'){it.loops<=this.c}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
 

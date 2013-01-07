@@ -12,13 +12,14 @@ select * where{
     ?f movie:initial_release_date ?date .
             FILTER ( fn:starts-with(?date, "199") )
 }
+LIMIT 5
 """
     rank  """
 RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
 """
     ranking{
         metric (type: "Relevance", weight: 1){
-            orig (type: "variable", label: "?a")
+            orig (type: "variable", label: "a")
             dest(type: "node", id: "http://data.linkedmdb.org/resource/director/8501")
         }
     }

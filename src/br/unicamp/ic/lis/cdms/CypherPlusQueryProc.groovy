@@ -15,7 +15,7 @@ import com.tinkerpop.gremlin.groovy.Gremlin
 
 class CypherPlusQueryProc{
 
-	def rank, params, cypher, rankings, totalWeight
+	def rank, params, regular, rankings, totalWeight
 	def neoGraphDB, graph
 	def regResults //results from regular query
 	def Results = [:].withDefault{0.0} //results from ranking
@@ -27,7 +27,7 @@ class CypherPlusQueryProc{
 		this.graph = new Neo4jGraph(this.neoGraphDB)
 		
 		registerShutdownHook( this.neoGraphDB );
-		rank = params = cypher = ""
+		rank = params = regular = ""
 		rankings = [:]
 		totalWeight = 0
 		
@@ -43,7 +43,7 @@ class CypherPlusQueryProc{
             this.totalWeight += it.@weight.toFloat()
         }
 
-		println("cypher: " + this.parsedQuery.regular[0].value().trim())
+		println("regular: " + this.parsedQuery.regular[0].value().trim())
 		println "this.rankings = ${this.parsedQuery.ranking}"
 	}
 
@@ -51,7 +51,7 @@ class CypherPlusQueryProc{
 		parseQuery(query)
 
         this.parsedQuery.ranking.metric.each{
-            processCypher()
+            processRegular()
             if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
                 this.processMetric(it, getOrigs(it), getDest(it))
             }
@@ -230,7 +230,7 @@ class CypherPlusQueryProc{
     }
 
 
-    def processCypher() {
+    def processRegular() {
 		
 		ExpandoMetaClass.enableGlobally()
 		Map.metaClass.getProperty = {name -> delegate.get(name).get()}
