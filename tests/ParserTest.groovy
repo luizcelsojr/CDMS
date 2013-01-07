@@ -13,13 +13,13 @@ class ParserTest extends GroovyTestCase {
     }
 
     void testParser(){
-        def queryf = '/Users/luizcelso/workspace/CDMS/queries/query-cypher-rel-symdia_cases.groovy'
+        def queryf = '/Users/luizcelso/workspace/CDMS/queries/query-cypher-rel-symdia_cases_test.groovy'
         def parser = new Parser()
 
         def query = parser.parse(queryf)
 
         assertEquals('cypher', query.@type)
-        assertEquals('relevance', query.ranking.metric.grep{it.@type == 'relevance'}[0].@type)
+        assertEquals('Relevance', query.ranking.metric.grep{it.@type == 'Relevance'}[0].@type)
 
     }
 }

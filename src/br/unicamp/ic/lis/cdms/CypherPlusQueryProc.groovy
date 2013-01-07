@@ -21,16 +21,8 @@ class CypherPlusQueryProc{
 	def Results = [:].withDefault{0.0} //results from ranking
     def parsedQuery
 
-	def benchmark = { closure ->
-		def start, now
-		start = System.currentTimeMillis()
-		closure.call()
-		now = System.currentTimeMillis()
-		now - start
-	}
 
 	def CypherPlusQueryProc(db_path){
-		
 		this.neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
 		this.graph = new Neo4jGraph(this.neoGraphDB)
 		
@@ -43,7 +35,6 @@ class CypherPlusQueryProc{
 
 	
 	def parseQuery(query){
-
         def parser = new Parser()
 
         this.parsedQuery = parser.parse(query)
@@ -61,7 +52,11 @@ class CypherPlusQueryProc{
 
         this.parsedQuery.ranking.metric.each{
             processCypher()
-            this."processQuery${it.@type}"(it)
+            if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
+                this.processMetric(it, getOrigs(it), getDest(it))
+            }
+            else{println "Invalid parameters (" + it + ")"}
+
         }
 
 		def m = this.Results.sort{a,b -> b.value <=> a.value}
@@ -71,11 +66,13 @@ class CypherPlusQueryProc{
 	}
 
     def getDest(context){
+        Gremlin.load()
         def destid = context.dest[0].@id
         return this.graph.v(destid)
     }
 
     def getOrigs(context){
+        Gremlin.load()
         def origs = []
         while(this.regResults.hasNext()) {
             def v = this.graph.v(this.regResults.next().getProperty(context.orig[0].@label).getId());
@@ -85,22 +82,34 @@ class CypherPlusQueryProc{
         return origs
     }
 
-	def processQueryRelevance(context){
-		Gremlin.load()
-		println "rank: weight=${context.@weight} RELEVANCE context: " + context;
+    SA getSA(context){
+        switch(context.@type.toLowerCase()){
+            case "relevance":
+                return new SA(context, true)
+                break
+            case "connectivity":
+                return new SA(context, false)
+                break
+            case "influence":
+                processQueryInfluence()
+                break
 
+            default:
+                println	"Invalid Ranking Operation"
+        }
+    }
 
-		if (context.orig[0].@type == 'variable' && context.dest[0].@type == 'node'){ //first param is variable, second is node/id
-            def dest = getDest(context)
-            def origs = getOrigs(context)
+	def processMetric(context, origs, dest){
+        Gremlin.load()
+		println "rank: weight=${context.@weight} ${context.@type} context: " + context;
 
 			def R = [:] //results
 			def maxResult = 0.0
             def result = 0.0
 
-            def sa = new SA(context, true)
+            def sa = getSA(context)
 
-            println "Relevance - " + origs + " --> " + dest
+            println "${context.@type} - ${origs}  --> ${dest}"
 
             origs.each{
                 result = sa.process(it, dest)
@@ -113,42 +122,8 @@ class CypherPlusQueryProc{
                 this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
             }
 
-		}
-		else{println "Invalid parameters (" + params + ")"}
+
 	}
-
-    def processQueryConnectivity(context){
-        Gremlin.load()
-        println "rank: weight=${context.@weight} CONN context: " + context;
-
-
-        if (context.orig[0].@type == 'variable' && context.dest[0].@type == 'node'){ //first param is variable, second is node/id
-            def dest = getDest(context)
-            def origs = getOrigs(context)
-
-            def R = [:] //results
-            def maxResult = 0.0
-            def result = 0.0
-
-            def sa = new SA(context, false)
-
-            println "Connectivity - " + origs + " --> " + dest
-
-            origs.each{
-                result = sa.process(it, dest)
-                if (result > maxResult) maxResult = result
-                R[it] = result
-            }
-            def normWeight = context.@weight/this.totalWeight
-
-            R.each{ key, value ->
-                this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
-            }
-
-        }
-        else{println "Invalid parameters (" + params + ")"}
-    }
-
 
 	def processQueryRelvance_Old(){
 		Gremlin.load()
@@ -264,33 +239,7 @@ class CypherPlusQueryProc{
 		def engine = new ExecutionEngine( this.neoGraphDB );
 
 		this.regResults = engine.execute(this.parsedQuery.regular[0].value().trim());
-		
-		return
-		//println( this.regResults );
-		//while(this.regResults.hasNext()) { print this.regResults.next()}
-		//def column = this.regResults.columnAs("n.label")
-		println this.regResults.class.name
-		println this.regResults.next().class.name
-		println this.regResults.next().n
-		println this.regResults.next().keys()
-		println this.regResults.next().get('n').class
-		println this.regResults.next().get('n').class.methods
-		println this.regResults.next().get('n').get().class.methods
-		println this.regResults.next().get('n').get().class
-		println this.regResults.next().get('n').get().getId()
-		println this.regResults.next().get('n.label').get()
-		return
-		this.regResults.each{
-			println it.get('n') //.get().getId()
-	}
-		this.regResults.next().class.methods.each{
-			//n -> println n
-		}
-		
-		//while(column.hasNext()) { print column.next()}
-		return
-
-	}
+    }
 
 	private static void registerShutdownHook( final GraphDatabaseService graphDb )
 	{

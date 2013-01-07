@@ -1,5 +1,6 @@
 package br.unicamp.ic.lis.cdms
 
+import br.unicamp.ic.lis.cdms.queryproc.Parser
 import org.openrdf.query.QueryLanguage
 import com.tinkerpop.gremlin.groovy.Gremlin
 
@@ -32,6 +33,13 @@ class SparqlQueryProc{
 	}
 
 	def parseQuery(query){
+
+        def parser = new Parser()
+
+        def parsedQuery = parser.parse(query)
+
+        query = parsedQuery.regular[0].value().trim() + "\n" + parsedQuery.rank[0].value().trim()
+
 		def myRegularExpression =/RANK BY ([a-zA-Z]+) \((.*)\)/
 		def matcher
 

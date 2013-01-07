@@ -30,6 +30,10 @@ class SA {
         Gremlin.load()
     }
 
+    SA (){
+
+    }
+
     SA(context, dividePotential){
         context.attributes().each{key, value ->
             this."$key" = value

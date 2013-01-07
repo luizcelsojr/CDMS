@@ -1,7 +1,7 @@
 def builder = NodeBuilder.newInstance()
 
 
-builder.query  (type: "cypher") {
+builder.query  (type: "sparql") {
     regular  """
 PREFIX movie: <http://data.linkedmdb.org/resource/movie/>
 select * where{
@@ -17,30 +17,10 @@ select * where{
 RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
 """
     ranking{
-        metric (type: "Relevance", weight: 2){
-            orig (type: "variable", label: "?a")
-            dest(type: "node", id: "http://data.linkedmdb.org/resource/director/8501")
-        }
-        metric (type: "Connectivity", weight: 1){
+        metric (type: "Relevance", weight: 1){
             orig (type: "variable", label: "?a")
             dest(type: "node", id: "http://data.linkedmdb.org/resource/director/8501")
         }
     }
 }
 
-
-/*
-          metric2{
-            type = "connectivity"
-            weight = 1
-            orig{
-                type = "variable"
-                label = "?a"
-            }
-            dest{
-                type = "node"
-                id = "http://data.linkedmdb.org/resource/director/8501"
-            }
-        }
-
-*/
