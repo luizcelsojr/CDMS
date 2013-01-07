@@ -1,6 +1,7 @@
     package br.unicamp.ic.lis.cdms
 
     import br.unicamp.ic.lis.cdms.queryproc.Parser
+    import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
     import br.unicamp.ic.lis.cdms.sa.SA
     import org.openrdf.query.QueryLanguage
 
@@ -79,10 +80,10 @@
         SA getSA(context){
             switch(context.@type.toLowerCase()){
                 case "relevance":
-                    return new SA(context, true)
+                    return new RandomWalkerSA(context, true)
                     break
                 case "connectivity":
-                    return new SA(context, false)
+                    return new RandomWalkerSA(context, false)
                     break
                 case "influence":
                     processQueryInfluence()

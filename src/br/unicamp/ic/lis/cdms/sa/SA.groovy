@@ -17,10 +17,14 @@ class SA {
     String type = '' // metric type... should not be used here but its existence makes SA constructor simpler
     Float weight = 1.0 // weight of the metric.. same as above
     int c = 2 //maximum radius of the SA network
+    Float t = 0.1 //activation threshold
+    Float d = 0.9 //decay factor
+    Float a = 100.0
     String direction = Constants.BOTH //which direction the SA steps must follow
     Boolean weighted = false //whether edge weights must be multiplied to degrade the signal
     String weightProp = "weight" //property with containing edge weights
     Boolean dividePotential = false // whether activation potential will be divided among neighbors (true) or passed integrally (false)
+    //def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
 
 
     def orig
@@ -31,7 +35,7 @@ class SA {
     }
 
     SA (){
-
+        //default constructor
     }
 
     SA(context, dividePotential){
@@ -43,44 +47,30 @@ class SA {
 
     float process(orig, dest){
 
-        //TODO: parametrize those
-        //TODO: use float numbers
-        def A = [:].withDefault{0}
-
-        def t = 0.1 //activation threshold
-        def d = 0.9 //decay factor
-
-        //println "SA - ${orig} --> ${dest} \n Follow = ${this.direction}"
-
-        def m = [:].withDefault{0}
-        def p = [:]
-
-        //def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
+        def A = [:].withDefault{0.0} //activated nodes
 
         def destid = dest.id.toString()
 
-
-        A = [:].withDefault{0}
-        A[orig] = 100
+        A[orig] = this.a
 
         orig.as('start')
                         .filter{
-                            A[it] > t}
+                            A[it] > this.t}
                         .transform{
                             def neighbors = []
                             if (this.direction != Constants.OUTBOUND) neighbors.addAll(it.inE.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
                             if (this.direction != Constants.INBOUND) neighbors.addAll(it.outE.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
 
                             def n = neighbors.size().toFloat()
-                            //TODO remove (after new benchmarks)
+                            /*
                             if (n > 1000 | n == 0) {//println "vaza ${it}.....";
-                                return []}
-                            def Atransfer = (this.dividePotential) ? (A[it] * d)/n : (A[it] * d)
+                                return []}*/
+                            def Atransfer = (this.dividePotential) ? (A[it] * this.d)/n : (A[it] * this.d)
                             neighbors.each{
                                 // it is the path, it[-1] is the outV
                                 A[it[-1]] += (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
                             }
-                            if (n) A[it] = 0
+                            if (n) A[it] = 0.0
                             //println "A ${A}"
                             neighbors.collect{it[-1]}
                         }.scatter
