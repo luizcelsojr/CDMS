@@ -54,7 +54,7 @@ class SATest extends GroovyTestCase{
         args = this.defaultArgs.clone()
         args['direction'] = Constants.OUTBOUND
         args['dividePotential'] = true
-        runSA(args, this.g.v(1), this.g.v(5), ((((100.0/3.0)*0.9)/2.0)*0.9).floatValue())
+        runSA(args, this.g.v(1), this.g.v(5), ((((100.0/3.0)*0.9)/2.0)*0.9))
 
         println "*** simple weighted SA ***"
         args = this.defaultArgs.clone()
