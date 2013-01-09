@@ -14,7 +14,7 @@ RANK BY 1 WRELEVANCE (n,_117)
 --RANK BY WCONNECTIVITY (n,_117)
 """
     ranking{
-        metric (type: "Relevance", weight: 1, weighted: false, direction: Constants.BOTH){
+        metric (type: "Relevance", weight: 1, weighted: false, direction: Constants.OUTBOUND){
             orig (type: "variable", label: "actor")
             dest(type: "node", id: "5")
         }

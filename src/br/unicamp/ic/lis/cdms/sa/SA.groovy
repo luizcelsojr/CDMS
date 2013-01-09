@@ -15,11 +15,11 @@ class SA {
     //setting class variables with default values
     Graph graph
     String type = '' // metric type... should not be used here but its existence makes SA constructor simpler
-    Float weight = 1.0 // weight of the metric.. same as above
+    Float weight = 1.0f // weight of the metric.. same as above
     int c = 2 //maximum radius of the SA network
-    Float t = 0.1 //activation threshold
-    Float d = 0.9 //decay factor
-    Float a = 100.0
+    Float t = 0.1f //activation threshold
+    Float d = 0.9f //decay factor
+    Float a = 100.0f
     String direction = Constants.BOTH //which direction the SA steps must follow
     Boolean weighted = false //whether edge weights must be multiplied to degrade the signal
     String weightProp = "weight" //property with containing edge weights
@@ -47,7 +47,7 @@ class SA {
 
     float process(orig, dest){
 
-        def A = [:].withDefault{0.0} //activated nodes
+        def A = [:].withDefault{0.0f} //activated nodes
 
         def destid = dest.id.toString()
 
@@ -70,7 +70,7 @@ class SA {
                                 // it is the path, it[-1] is the outV
                                 A[it[-1]] += (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
                             }
-                            if (n) A[it] = 0.0
+                            if (n) A[it] = 0.0f
                             //println "A ${A}"
                             neighbors.collect{it[-1]}
                         }.scatter
