@@ -79,7 +79,8 @@ class SATest extends GroovyTestCase{
         println "total time: ${time}"
 
         println "result: ${potential}"
-        assertEquals(expected, potential)
+        assertEquals(expected, potential, 0.001)
+
 
 
     }

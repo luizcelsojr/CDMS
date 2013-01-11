@@ -144,6 +144,7 @@ RunQ(args)
 
 
 java -jar ~/Dropbox/workspace/GIRDB/target/GIRDB-0.0.1-SNAPSHOT.jar -l cypher -f /home/lis/luizcelso/phd/workspace/GIRDB/queries/query-cypher-rel-symdia_cases.txt -d /lishome-ext/luizcelso/graphdbs/symdia_cases
+java -jar /home/lis/luizcelso/workspace/CDMS/target/CDMS-0.0.1-SNAPSHOT.jar -l cypher -f /home/lis/luizcelso/workspace/CDMS/queries/query-cypher-rel-movie-recomm.groovy -d /lishome-ext/serverdata/linkedimdb/neoLMDB
 
 
  */

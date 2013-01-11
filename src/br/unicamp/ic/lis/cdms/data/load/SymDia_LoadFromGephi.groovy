@@ -21,6 +21,7 @@ def header = null
 
 indexProvider = new LuceneBatchInserterIndexProvider( inserter );
 symdiaIdx = indexProvider.nodeIndex( "symdia", MapUtil.stringMap( "type", "exact" ) );
+
 //symdiaIdx.setCacheCapacity( "type", 100000 );
 
 //process nodes
