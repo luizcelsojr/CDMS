@@ -8,7 +8,7 @@
 
 import br.unicamp.ic.lis.cdms.mappers.*
 
-class MapperTest {
+class MapperTest extends GroovyTestCase {
 
 
     def testLucene (){
