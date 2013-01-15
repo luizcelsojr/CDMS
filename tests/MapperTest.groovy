@@ -32,15 +32,16 @@ class MapperTest extends GroovyTestCase {
         def mapper = new LuceneMapper(this.graph)
 
         mapper.map(this.graph.v(4))
-        mapper.index.get('token', 'silence').each{println "hello ${it}"}
+//        mapper.index.get('token', 'silence').each{println "hello ${it}"}
 
-        this.graph.v(4).outE.map().each{
+        this.graph.v(4).outE('LuceneMapperIdx:hasToken').inV.each{
             println it
         }
 
-        mapper.rollback()
-        print mapper.index.getIndexName()
-        mapper.index.get('token', 'silence').each{println "wont say ${it}"}
+//        mapper.rollback()
+        mapper.commit()
+//        print mapper.index.getIndexName()
+//        mapper.index.get('token', 'silence').each{println "wont say ${it}"}
 
 
 

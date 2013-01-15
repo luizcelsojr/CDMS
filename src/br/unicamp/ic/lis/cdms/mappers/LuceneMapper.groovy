@@ -16,6 +16,7 @@ import org.apache.lucene.util.Version
 class LuceneMapper {
     TransactionalGraph graph = null
     def idxName = this.class.simpleName + 'Idx'
+    def edgeLabel = this.idxName + ':hasToken'
     def index = null
 
     def analyser = new StandardAnalyzer(Version.LUCENE_36)
@@ -33,10 +34,15 @@ class LuceneMapper {
     }
 
     Vertex map (Vertex node){
+        //return same node in case of mapping, null if no mapping
         Gremlin.load()
         def tokenNode
 
-        def content = node.outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
+
+        def content
+
+        if (!(content = node.content)) //content exists for anonymous (temporary) nodes
+            content = node.outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
 
         if (!content) return null
 
@@ -45,7 +51,7 @@ class LuceneMapper {
             def inode
             def nodes = this.index.get('token', value)
 
-            nodes.each{inode = it}
+            nodes.each{inode = it} //there should be a better way of doing this
 
 
             if (!inode) {
@@ -54,13 +60,12 @@ class LuceneMapper {
                 this.index.put('token', inode.token, inode)
             }
 
-            this.graph.addEdge(node, inode, this.idxName + 'hasToken')
+            if (!node.outE(this.edgeLabel).inV.any{it.id == inode.id}) //if the map isnt already there
+                this.graph.addEdge(node, inode, this.edgeLabel) //add map
 
         }
 
         return node
-
-
     }
 
     void commit(){
