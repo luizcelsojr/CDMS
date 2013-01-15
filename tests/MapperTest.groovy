@@ -27,7 +27,7 @@ class MapperTest extends GroovyTestCase {
     }
 
 
-    void testLucene (){
+    void testLuceneMapper (){
         Gremlin.load()
         def mapper = new LuceneMapper(this.graph)
 
@@ -35,11 +35,23 @@ class MapperTest extends GroovyTestCase {
 //        mapper.index.get('token', 'silence').each{println "hello ${it}"}
 
         this.graph.v(4).outE('LuceneMapperIdx:hasToken').inV.each{
-            println it
+            println "${it} - - ${it.map()}"
         }
 
-//        mapper.rollback()
-        mapper.commit()
+        assertTrue(this.graph.v(4).outE('LuceneMapperIdx:hasToken').inV.any{it.token == 'lambs'})
+
+
+        def returnNode = mapper.map("taxi dRivEr silence mambo")
+//        mapper.index.get('token', 'silence').each{println "hello ${it}"}
+
+        returnNode.outE('LuceneMapperIdx:hasToken').inV.each{
+            println "${it} - - ${it.map()}"
+        }
+
+        assertTrue(returnNode.outE('LuceneMapperIdx:hasToken').inV.any{it.token == 'driver'})
+
+        mapper.rollback()
+//        mapper.commit()
 //        print mapper.index.getIndexName()
 //        mapper.index.get('token', 'silence').each{println "wont say ${it}"}
 

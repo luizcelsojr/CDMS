@@ -68,6 +68,14 @@ class LuceneMapper {
         return node
     }
 
+    Vertex map (String content){
+        //returns new node in case of mapping, null if no mapping
+        Vertex node = this.graph.addVertex()
+        node.content = content
+
+        return map(node)
+    }
+
     void commit(){
         this.graph.stopTransaction(TransactionalGraph.Conclusion.SUCCESS)
     }

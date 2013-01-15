@@ -2,6 +2,7 @@ package br.unicamp.ic.lis.cdms.mappers
 
 import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph
 import com.tinkerpop.gremlin.groovy.Gremlin
+import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
 
@@ -24,8 +25,6 @@ class MapperProc {
         this.neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
         this.graph = new Neo4jGraph(this.neoGraphDB)
 
-        neo = new Neo4jGraph(this.neoGraphDB)
-
         registerShutdownHook( this.neoGraphDB );
         rank = params = regular = ""
         rankings = [:]
@@ -40,14 +39,26 @@ class MapperProc {
 
 
         println("regular: " + this.parsedQuery.regular[0].value().trim())
-        println "this.rankings = ${this.parsedQuery.ranking}"
+        println "this.mapping = ${this.parsedQuery.mapping}"
     }
 
     def processQuery(query){
         parseQuery(query)
+        processRegular()
+
+        def mapperName = this.parsedQuery.mapping.mapper[0].@type
+
+        println mapperName
+
+        def mapperClass = 'br.unicamp.ic.lis.cdms.mappers.' + mapperName as Class
+        def mapper = mapperClass.newInstance(this.graph)
+
+        println mapper.class.name
+
+        System.exit(1)
 
         this.parsedQuery.ranking.metric.each{
-            processRegular()
+
             if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
                 this.processMetric(it, getOrigs(it), getDest(it))
             }
@@ -74,6 +85,16 @@ class MapperProc {
         return origs
     }
 
+    def processRegular() {
+
+        ExpandoMetaClass.enableGlobally()
+        scala.collection.immutable.Map.metaClass.getProperty = {name -> delegate.get(name).get()}
+        //Map2.metaClass.setProperty = {name, val -> delegate.setProperty(name, val)}
+
+        def engine = new ExecutionEngine( this.neoGraphDB );
+
+        this.regResults = engine.execute(this.parsedQuery.regular[0].value().trim());
+    }
 
 
 

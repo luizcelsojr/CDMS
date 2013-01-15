@@ -8,7 +8,7 @@ builder.query (action: "map", language: "cypher") {
 START
    movieType = node:node_auto_index(value='http://data.linkedmdb.org/resource/movie/film')
 MATCH
-(movie)-->(movieType),
+(movie)-->(movieType)
 RETURN DISTINCT movie;
 """
     mapping{
