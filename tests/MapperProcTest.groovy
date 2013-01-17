@@ -13,7 +13,9 @@ import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
 
 class MapperProcTest extends GroovyTestCase {
-    def db_path = '/Users/luizcelso/db/LMDBsample'
+    //def db_path = '/Users/luizcelso/db/LMDBsample'
+    def db_path = '/home/lis/luizcelso/workspace/neo4j-sail-test/var/LMDBsample'
+    //def db_path = '/lishome-ext/serverdata/linkedimdb/neoLMDB'
     def graph = null
 
     void setUp(){

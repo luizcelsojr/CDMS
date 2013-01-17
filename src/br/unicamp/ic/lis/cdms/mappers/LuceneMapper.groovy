@@ -16,7 +16,7 @@ import org.apache.lucene.util.Version
 class LuceneMapper {
     TransactionalGraph graph = null
     def idxName = this.class.simpleName + 'Idx'
-    def edgeLabel = this.idxName + ':hasToken'
+    def edgeLabel = this.class.simpleName + ':hasToken'
     def index = null
 
     def analyser = new StandardAnalyzer(Version.LUCENE_36)
@@ -45,6 +45,8 @@ class LuceneMapper {
             content = node.outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
 
         if (!content) return null
+
+        content =  QueryParser.escape(content)
 
         this.parser.parse(content).each{
             def value = it.toString()

@@ -18,6 +18,7 @@ class MapperTest extends GroovyTestCase {
 
     void setUp(){
 
+        //def db_path = '/home/lis/luizcelso/workspace/neo4j-sail-test/var/LMDBsample'
         def db_path = '/Users/luizcelso/db/LMDBsample'
         def neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
         this.graph = new Neo4jGraph(neoGraphDB)
@@ -34,21 +35,21 @@ class MapperTest extends GroovyTestCase {
         mapper.map(this.graph.v(4))
 //        mapper.index.get('token', 'silence').each{println "hello ${it}"}
 
-        this.graph.v(4).outE('LuceneMapperIdx:hasToken').inV.each{
+        this.graph.v(4).outE('LuceneMapper:hasToken').inV.each{
             println "${it} - - ${it.map()}"
         }
 
-        assertTrue(this.graph.v(4).outE('LuceneMapperIdx:hasToken').inV.any{it.token == 'lambs'})
+        assertTrue(this.graph.v(4).outE('LuceneMapper:hasToken').inV.any{it.token == 'lambs'})
 
 
         def returnNode = mapper.map("taxi dRivEr silence mambo")
 //        mapper.index.get('token', 'silence').each{println "hello ${it}"}
 
-        returnNode.outE('LuceneMapperIdx:hasToken').inV.each{
+        returnNode.outE('LuceneMapper:hasToken').inV.each{
             println "${it} - - ${it.map()}"
         }
 
-        assertTrue(returnNode.outE('LuceneMapperIdx:hasToken').inV.any{it.token == 'driver'})
+        assertTrue(returnNode.outE('LuceneMapper:hasToken').inV.any{it.token == 'driver'})
 
         mapper.rollback()
 //        mapper.commit()

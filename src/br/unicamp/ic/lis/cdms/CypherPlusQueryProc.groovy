@@ -20,6 +20,7 @@ class CypherPlusQueryProc{
 	def regResults //results from regular query
 	def Results = [:].withDefault{0.0} //results from ranking
     def parsedQuery
+    def mapper = null
 
 
 	def CypherPlusQueryProc(db_path){
@@ -55,11 +56,16 @@ class CypherPlusQueryProc{
             if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
                 this.processMetric(it, getOrigs(it), getDest(it))
             }
+            else if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'map'){ //first param is variable, second is node/id
+                this.processMetric(it, getOrigs(it), getDestMap(it))
+            }
             else{println "Invalid parameters (" + it + ")"}
 
         }
 
-		def m = this.Results.sort{a,b -> b.value <=> a.value}
+        if (this.mapper) this.mapper.rollback()
+
+		def m = this.Results.sort{a,b -> b.value <=> a.value}[0..20]
 		//println "m: ${m}"
 		//m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).map().Label}, ${value}"}
         m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value}, ${value}"}
@@ -68,8 +74,26 @@ class CypherPlusQueryProc{
 
     def getDest(context){
         Gremlin.load()
+
         def destid = context.dest[0].@id
         return this.graph.v(destid)
+    }
+
+    def getDestMap(context){
+        //creates dest based on a mapper
+        Gremlin.load()
+
+        def mapperName = context.dest[0].@mapper
+
+        println mapperName
+
+        //TODO: create mapper class with builder for all mappers
+        def mapperClass = 'br.unicamp.ic.lis.cdms.mappers.' + mapperName as Class
+        this.mapper = mapperClass.newInstance(this.graph)
+
+        def node = this.mapper.map(context.dest[0].@parameter)
+
+        return node
     }
 
     def getOrigs(context){

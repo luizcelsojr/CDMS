@@ -9,7 +9,8 @@ START
    movieType = node:node_auto_index(value='http://data.linkedmdb.org/resource/movie/film')
 MATCH
 (movie)-->(movieType)
-RETURN DISTINCT movie;
+RETURN DISTINCT movie
+LIMIT 2;
 """
     mapping{
         mapper (type: "LuceneMapper"){

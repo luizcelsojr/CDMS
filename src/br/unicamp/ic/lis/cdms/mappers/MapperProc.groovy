@@ -55,34 +55,29 @@ class MapperProc {
 
         println mapper.class.name
 
-        System.exit(1)
-
-        this.parsedQuery.ranking.metric.each{
-
-            if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
-                this.processMetric(it, getOrigs(it), getDest(it))
-            }
-            else{println "Invalid parameters (" + it + ")"}
-
-        }
-
-        def m = this.Results.sort{a,b -> b.value <=> a.value}
-        //println "m: ${m}"
-        //m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).map().Label}, ${value}"}
-        m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value}, ${value}"}
+        process(this.parsedQuery.mapping.mapper[0], mapper)
 
     }
 
 
-    def getOrigs(context){
+    def process(context, mapper){
         Gremlin.load()
+        println context.parameter[0].@value
+
+
         def origs = []
         while(this.regResults.hasNext()) {
-            def v = this.graph.v(this.regResults.next().getProperty(context.orig[0].@label).getId());
-            origs.add(v);
+            def v = this.graph.v(this.regResults.next().getProperty(context.parameter[0].@value).getId());
+            println v
 
+            mapper.map(v)
+
+            v.outE('LuceneMapper:hasToken').inV.each{
+                println "${it} - - ${it.map()}"
+            }
         }
-        return origs
+
+        mapper.commit()
     }
 
     def processRegular() {

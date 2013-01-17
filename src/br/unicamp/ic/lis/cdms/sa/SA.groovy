@@ -25,6 +25,7 @@ class SA {
     String weightProp = "weight" //property with containing edge weights
     Boolean dividePotential = false // whether activation potential will be divided among neighbors (true) or passed integrally (false)
     //def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
+    def follow = [] //list of relationships to follow
 
 
     def orig
@@ -58,8 +59,8 @@ class SA {
                             A[it] > this.t}
                         .transform{
                             def neighbors = []
-                            if (this.direction != Constants.OUTBOUND) neighbors.addAll(it.inE.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
-                            if (this.direction != Constants.INBOUND) neighbors.addAll(it.outE.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
+                            if (this.direction != Constants.OUTBOUND) neighbors.addAll(it.inE.filter{(this.follow)?it.label in this.follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
+                            if (this.direction != Constants.INBOUND) neighbors.addAll(it.outE.filter{(this.follow)?it.label in this.follow: true}.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
 
                             def n = neighbors.size().toFloat()
                             /*

@@ -42,6 +42,7 @@ class SATest extends GroovyTestCase{
         this.defaultArgs['weighted'] = false
         this.defaultArgs['weightProp'] = 'weight'
         this.defaultArgs['dividePotential'] = false
+        this.defaultArgs['follow'] = []
 
     }
 
@@ -63,6 +64,13 @@ class SATest extends GroovyTestCase{
         args['weighted'] = true
         runSA(args, this.g.v(3), this.g.v(4), 36.0)
 
+        println "*** dividing potential unweighted SA, follow 'created' ***"
+        args = this.defaultArgs.clone()
+        args['direction'] = Constants.BOTH
+        args['dividePotential'] = true
+        args['follow'] = ['created', 'non-existent']
+        args['c'] = 3
+        runSA(args, this.g.v(1), this.g.v(5), ((((((100.0/1.0)*0.9)/3.0)*0.9))/2.0)*0.9)
 
     }
 
