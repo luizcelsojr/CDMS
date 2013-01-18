@@ -20,14 +20,15 @@ class QueryMapTest extends GroovyTestCase {
     }
 
 
+
+
+
     void testQueryMap (){
         //Gremlin.load()
         def queryf = '/Users/luizcelso/workspace/CDMS/queries/querymap-cypher-lucene-movie-keyword.groovy'
         def qp = new CypherPlusQueryProc(db_path)
 
         qp.processQuery(queryf)
-
-
 
     }
 

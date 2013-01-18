@@ -68,7 +68,10 @@ class CypherPlusQueryProc{
 		def m = this.Results.sort{a,b -> b.value <=> a.value}[0..20]
 		//println "m: ${m}"
 		//m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).map().Label}, ${value}"}
-        m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value}, ${value}"}
+        m.each{key, value ->
+            def label = this.graph.v(key.id).map().Label? this.graph.v(key.id).map().Label: this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
+            println "${key.id}, ${label}, ${value}"
+        }
 		
 	}
 

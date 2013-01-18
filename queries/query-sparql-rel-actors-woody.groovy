@@ -12,7 +12,7 @@ select * where{
     ?f movie:initial_release_date ?date .
             FILTER ( fn:starts-with(?date, "199") )
 }
-LIMIT 98
+LIMIT 200
 """
     rank  """
 RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
