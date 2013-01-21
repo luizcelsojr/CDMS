@@ -21,7 +21,7 @@ RANK BY 1 WRELEVANCE (n,_117)
 --RANK BY WCONNECTIVITY (n,_117)
 """
     ranking{
-        metric (type: "Relevance", weight: 1, weighted: false, direction: Constants.BOTH){
+        metric (type: "Relevance", weight: 1, weighted: false, direction: Constants.BOTH, follow: ['http://data.linkedmdb.org/resource/movie/director', 'http://data.linkedmdb.org/resource/movie/genre']){
             orig (type: "variable", label: "movie")
             dest(type: "node", id: "695985")
         }

@@ -15,7 +15,7 @@ LIMIT 2;
     ranking{
         metric (type: "Relevance", weight: 1, weighted: false, direction: Constants.BOTH, follow: ['LuceneMapper:hasToken', 'LuceneMapperIdx:hasToken']){
             orig (type: "variable", label: "movie")
-            dest (type: "map", mapper: "LuceneMapper", parameter: "fight club")
+            dest (type: "map", mapper: "LuceneMapper", parameter: "my favorite films are fight club and american beauty")
         }
     }
 }
