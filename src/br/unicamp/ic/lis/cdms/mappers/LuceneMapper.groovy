@@ -86,8 +86,5 @@ class LuceneMapper {
         this.graph.stopTransaction(TransactionalGraph.Conclusion.FAILURE)
     }
 
-    def run(){
-
-    }
 }
 
