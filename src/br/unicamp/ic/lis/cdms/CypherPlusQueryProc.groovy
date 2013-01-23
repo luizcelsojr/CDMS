@@ -79,7 +79,9 @@ class CypherPlusQueryProc{
         Gremlin.load()
 
         def destid = context.dest[0].@id
-        return this.graph.v(destid)
+        def dest = this.graph.v(destid)
+        println dest.map()
+        return dest
     }
 
     def getDestMap(context){
@@ -137,7 +139,7 @@ class CypherPlusQueryProc{
 
             def sa = getSA(context)
 
-            println "${context.@type} - ${origs}  --> ${dest}"
+            println "${context.@type} - ${(origs.size > 10)? origs[0..10] + '...': origs}  --> ${dest}"
 
             origs.each{
                 result = sa.process(it, dest)

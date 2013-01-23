@@ -26,6 +26,7 @@ class SA {
     Boolean dividePotential = false // whether activation potential will be divided among neighbors (true) or passed integrally (false)
     //def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
     def follow = [] //list of relationships to follow
+    int maxIterations = 100000
 
 
     def orig
@@ -52,11 +53,13 @@ class SA {
 
         def destid = dest.id.toString()
 
+        def countIterations = 0
+
         A[orig] = this.a
 
         orig.as('start')
-                        .filter{
-                            A[it] > this.t}
+                        .sideEffect{countIterations++}
+                        .filter{(A[it] > this.t)} // and (countIterations < this.maxIterations)
                         .transform{
                             def neighbors = []
                             if (this.direction != Constants.OUTBOUND) neighbors.addAll(it.inE.filter{(this.follow)?it.label in this.follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
@@ -71,13 +74,12 @@ class SA {
                                 // it is the path, it[-1] is the outV
                                 A[it[-1]] += (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
                             }
-                            if (n) A[it] = 0.0f
+                            //if (n) A[it] = 0.0f                         .filter{it.id!=destid}
                             //println "A ${A}"
                             neighbors.collect{it[-1]}
                         }.scatter
                 .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
-                        .filter{it.id!=destid}
-                        .loop('start'){it.loops<=this.c}{(it.object.id==destid)}.iterate() //println "it.object.id=${it.object.id}";
+                        .loop('start'){it.loops<=this.c}.iterate() //println "it.object.id=${it.object.id}";
 
 
         return A[dest]

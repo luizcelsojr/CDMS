@@ -12,7 +12,7 @@ import com.tinkerpop.gremlin.groovy.Gremlin
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
 
-class MapperTest extends GroovyTestCase {
+class MapperTest { //extends GroovyTestCase
 
     def graph = null
 

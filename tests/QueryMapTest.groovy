@@ -9,10 +9,10 @@
 import br.unicamp.ic.lis.cdms.CypherPlusQueryProc
 import br.unicamp.ic.lis.cdms.mappers.MapperProc
 
-class QueryMapTest extends GroovyTestCase {
-    //def db_path = '/Users/luizcelso/db/LMDBsample'
+class QueryMapTest  { //extends GroovyTestCase
+    def db_path = '/Users/luizcelso/db/LMDBsample'
     //def db_path = '/home/lis/luizcelso/workspace/neo4j-sail-test/var/LMDBsampleMapped'
-    def db_path = '/lishome-ext/serverdata/linkedimdb/neoLMDB'
+    //def db_path = '/lishome-ext/serverdata/linkedimdb/neoLMDB'
     def graph = null
 
     void setUp(){
@@ -25,7 +25,7 @@ class QueryMapTest extends GroovyTestCase {
 
     void testQueryMap (){
         //Gremlin.load()
-        def queryf = '/Users/luizcelso/workspace/CDMS/queries/querymap-cypher-lucene-movie-keyword.groovy'
+        def queryf = '/Users/luizcelso/workspace/CDMS/queries/querymap-cypher-lucene-movie-keyword-test.groovy'
         def qp = new CypherPlusQueryProc(db_path)
 
         qp.processQuery(queryf)

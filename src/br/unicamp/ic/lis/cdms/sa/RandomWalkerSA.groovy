@@ -14,19 +14,26 @@ import groovy.transform.InheritConstructors
 
 @InheritConstructors
 class RandomWalkerSA extends SA {
-    def A = [:].withDefault{0.0f} //activated nodes
+    def Actv = [:].withDefault{0.0f} //activated nodes
 
     float process(orig, dest){
 
 
-        this.A[orig] = this.a
+        this.Actv[orig] = this.a
 
-        def rw = new RW(this, orig, dest, 1)
+
+        def rw = new RW(this, orig, dest, 10)
 
         rw.step()
 
+        println rw.current
 
-        return this.A[dest]
+        rw.step()
+
+        println rw.current
+
+
+        return this.Actv[dest]
 
     }
 
