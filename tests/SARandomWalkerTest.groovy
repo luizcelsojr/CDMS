@@ -56,10 +56,13 @@ class SARandomWalkerTestIII { // extends GroovyTestCase
 
         println "*** simple weighted SA ***"
         args = this.defaultArgs.clone()
-        args['c'] = 1
+        args['c'] = 3
         args['direction'] = Constants.BOTH
-        args['weighted'] = true
-        runSA(args, this.g.v(4), this.g.v(6), 36.0)
+        args['weighted'] = false
+        args['dividePotential'] = true
+        args['steps'] = 30
+        args['seed'] = 3
+        runSA(args, this.g.v(1), this.g.v(6), 36.0)
 
 
     }

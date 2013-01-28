@@ -1,10 +1,10 @@
 def builder = NodeBuilder.newInstance()
 
 
-builder.query  (type: "sparql") {
+builder.query  (type: "sparql", limit:2) {
     regular  """
 PREFIX movie: <http://data.linkedmdb.org/resource/movie/>
-select * where{
+select distinct ?a where{
     ?f movie:director <http://data.linkedmdb.org/resource/director/8501> .
     ?f rdfs:label ?l .
     ?f movie:actor ?a .
@@ -18,7 +18,7 @@ LIMIT 200
 RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
 """
     ranking{
-        metric (type: "Relevance", weight: 1){
+        metric (type: "Relevance", weight: 1, rw: true, steps: 2){
             orig (type: "variable", label: "a")
             dest(type: "node", id: "http://data.linkedmdb.org/resource/director/8501")
         }

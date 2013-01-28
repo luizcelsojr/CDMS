@@ -15,23 +15,23 @@ import groovy.transform.InheritConstructors
 @InheritConstructors
 class RandomWalkerSA extends SA {
     def Actv = [:].withDefault{0.0f} //activated nodes
+    int seed = 1
 
     float process(orig, dest){
 
+        this.Actv = [:].withDefault{0.0f}
 
         this.Actv[orig] = this.a
 
 
-        def rw = new RW(this, orig, dest, 10)
+        def rw = new RW(this, orig, dest, this.seed) //, 10
 
-        rw.step()
 
-        println rw.current
-
-        rw.step()
-
-        println rw.current
-
+        this.steps.times {
+            rw.step()
+            //println this.Actv[dest]
+        }
+        if (this.Actv[dest]) println "${orig} -> ${this.Actv[dest]}"
 
         return this.Actv[dest]
 

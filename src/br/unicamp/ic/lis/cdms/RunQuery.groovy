@@ -128,7 +128,7 @@ def RunQ(args){
     query = file //temporary
 
     def time = Timer.closureBenchmark{qp.processQuery(query)}
-    println "total time: ${time}"
+    println "total time: ${time} --> ${time/1000/60/60}h ${time/1000/60}min"
 
 
 }

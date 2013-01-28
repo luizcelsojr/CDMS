@@ -36,25 +36,37 @@ class RW {
 
 
     void reset(){
+        this.radius = 0
         this.current = this.orig
+        this.sa.Actv[this.orig] = this.sa.a
     }
 
 
     def step(){
+
+        if (this.radius >= this.sa.c)  this.reset()
+        //println "current node ${this.current}, previou radius = ${this.radius}"
+
+        this.radius++
+
         if (this.sa.Actv[this.current] < this.sa.t) {
             this.reset()
-            return //check semantics
+            return
         }
 
+
         def neighbors = []
-        if (this.sa.direction != Constants.OUTBOUND) neighbors.addAll(this.current.inE.filter{(this.sa.follow)?it.label in this.sa.follow: true}.outV.filter{this.current.map()['kind'] != 'literal'}.path().toList()) // if INBOUND or BOTH, add all inbound edges
-        if (this.sa.direction != Constants.INBOUND) neighbors.addAll(this.current.outE.filter{(this.sa.follow)?it.label in this.sa.follow: true}.inV.filter{this.current.map()['kind'] != 'literal'}.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
+
+        if (this.sa.direction != Constants.OUTBOUND) neighbors.addAll(this.current.inE.filter{(this.sa.follow)?it.label in this.sa.follow: true}.outV.filter{it.map()['kind'] != 'literal'}.path().toList()) // if INBOUND or BOTH, add all inbound edges
+        if (this.sa.direction != Constants.INBOUND) neighbors.addAll(this.current.outE.filter{(this.sa.follow)?it.label in this.sa.follow: true}.inV.filter{it.map()['kind'] != 'literal'}.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
 
 
         def n = neighbors.size().toFloat()
 
+
         if (n) {
             def next = neighbors[this.r.nextInt(n.toInteger())] //get random element
+            //println "next node = ${next[-1]}, current radius = ${this.radius}"
 
             def Atransfer = (this.sa.dividePotential) ? (this.sa.Actv[this.current] * this.sa.d)/n : (this.sa.Actv[this.current] * this.sa.d)
             // it is the path, it[-1] is the outV
@@ -65,15 +77,15 @@ class RW {
                 return
             }
 
+            this.sa.Actv[this.current] = 0.0f
+
             this.current = next[-1]
 
-            //this.sa.Actv[it] = 0.0f
         } else {
             reset()
             return
 
         }
     }
-
 
 }

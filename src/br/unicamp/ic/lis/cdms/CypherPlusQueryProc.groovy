@@ -1,6 +1,7 @@
 package br.unicamp.ic.lis.cdms
 
 import br.unicamp.ic.lis.cdms.queryproc.Parser
+import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
 import br.unicamp.ic.lis.cdms.sa.SA
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import org.neo4j.cypher.ExecutionEngine
@@ -65,9 +66,10 @@ class CypherPlusQueryProc{
 
         if (this.mapper) this.mapper.rollback()
 
-		def m = this.Results.sort{a,b -> b.value <=> a.value}[0..20]
-		//println "m: ${m}"
-		//m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).map().Label}, ${value}"}
+        def m = this.Results.sort{a,b -> b.value <=> a.value}
+
+        if (this.parsedQuery.@limit) m = m[0..this.parsedQuery.@limit - 1]
+
         m.each{key, value ->
             def label = this.graph.v(key.id).map().Label? this.graph.v(key.id).map().Label: this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
             println "${key.id}, ${label}, ${value}"
@@ -115,10 +117,10 @@ class CypherPlusQueryProc{
     SA getSA(context){
         switch(context.@type.toLowerCase()){
             case "relevance":
-                return new SA(context, true)
+                return (context.@rw)? new RandomWalkerSA(context, true): new SA(context, true)
                 break
             case "connectivity":
-                return new SA(context, false)
+                return (context.@rw)? new RandomWalkerSA(context, false): new SA(context, false)
                 break
             case "influence":
                 processQueryInfluence()
@@ -139,7 +141,7 @@ class CypherPlusQueryProc{
 
             def sa = getSA(context)
 
-            println "${context.@type} - ${(origs.size > 10)? origs[0..10] + '...': origs}  --> ${dest}"
+            println "${context.@type} - ${(origs.size > 10)? origs[0..10].toString() + '...x ' + origs.size: origs}  --> ${dest}"
 
             origs.each{
                 result = sa.process(it, dest)

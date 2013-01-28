@@ -55,9 +55,14 @@
             }
 
             def m = this.Results.sort{a,b -> b.value <=> a.value}
-            //println "m: ${m}"
-            m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().id}, ${value}"}
 
+            if (this.parsedQuery.@limit) m = m[0..this.parsedQuery.@limit - 1]
+
+//            m.each{key, value -> println "${key.id}, ${this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().id}, ${value}"}
+            m.each{key, value ->
+                def label = this.graph.v(key.id).map().Label? this.graph.v(key.id).map().Label: this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
+                println "${key.id}, ${label}, ${value}"
+            }
         }
 
         def getDest(context){
@@ -80,10 +85,10 @@
         SA getSA(context){
             switch(context.@type.toLowerCase()){
                 case "relevance":
-                    return new RandomWalkerSA(context, true)
+                    return (context.@rw)? new RandomWalkerSA(context, true): new SA(context, true)
                     break
                 case "connectivity":
-                    return new RandomWalkerSA(context, false)
+                    return (context.@rw)? new RandomWalkerSA(context, false): new SA(context, false)
                     break
                 case "influence":
                     processQueryInfluence()
@@ -104,7 +109,7 @@
 
             def sa = getSA(context)
 
-            println "${context.@type} - ${origs}  --> ${dest}"
+            println "${context.@type} - ${(origs.size > 10)? origs[0..10].toString() + '...x ' + origs.size: origs}  --> ${dest}"
 
             origs.each{
                 result = sa.process(it, dest)
