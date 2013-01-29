@@ -3,7 +3,7 @@ import br.unicamp.ic.lis.cdms.util.Constants
 def builder = NodeBuilder.newInstance()
 
 
-builder.query  (type: "sparql", limit: 5) {
+builder.query  (type: "sparql", limit: 50) {
     regular  """
 PREFIX movie: <http://data.linkedmdb.org/resource/movie/>
 select distinct ?subject, ?l where{

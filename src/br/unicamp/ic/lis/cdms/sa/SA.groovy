@@ -83,7 +83,7 @@ class SA {
                 .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
                         .loop('start'){it.loops<=this.c}.iterate() //println "it.object.id=${it.object.id}";
 
-        println "....Total iterations = ${countIterations}"
+        //println "....Total iterations = ${countIterations}"
 
 
         return A[dest]
