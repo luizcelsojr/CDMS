@@ -53,7 +53,7 @@ class SA {
 
         def A = [:].withDefault{0.0f} //activated nodes
 
-        def destid = dest.id.toString()
+        def destid = dest.id //.toString()
 
         def countIterations = 0
 
@@ -76,10 +76,11 @@ class SA {
                                 // it is the path, it[-1] is the outV
                                 A[it[-1]] += (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
                             }
-                            //if (n) A[it] = 0.0f                         .filter{it.id!=destid}
+                            if (n) A[it] = 0.0f                         //.filter{it.id!=destid}
                             //println "A ${A}"
                             neighbors.collect{it[-1]}
                         }.scatter
+                .filter{it.id!=destid}
                 .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
                         .loop('start'){it.loops<=this.c}.iterate() //println "it.object.id=${it.object.id}";
 

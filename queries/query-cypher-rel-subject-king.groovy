@@ -3,32 +3,22 @@ import br.unicamp.ic.lis.cdms.util.Constants
 def builder = NodeBuilder.newInstance()
 
 
-builder.query (type: "cypher") {
+builder.query (type: "cypher", limit: 50) {
     regular  """
 START
-   allenNode = node:node_auto_index(value='http://data.linkedmdb.org/resource/director/8501')
+   subjectType = node:node_auto_index(value='http://data.linkedmdb.org/resource/movie/film_subject')
 MATCH
-(movie)-[:`http://data.linkedmdb.org/resource/movie/director`]->(allenNode),
-(movie)-[:`http://data.linkedmdb.org/resource/movie/actor`]->(actor),
-(movie)-[:`http://data.linkedmdb.org/resource/movie/initial_release_date`]->(date)
-WHERE date.value =~ '199.*'
-RETURN DISTINCT actor
-LIMIT 1000;
+   (subject)-[:`http://www.w3.org/1999/02/22-rdf-syntax-ns#type`]->(subjectType)
+RETURN DISTINCT subject;
 """
     rank  """
-RANK BY 1 WRELEVANCE (n,_117)
---RANK BY 2 WCONNECTIVITY (n,_121)
---RANK BY WRELEVANCE (n,_117)
---RANK BY WCONNECTIVITY (n,_117)
+RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
 """
     ranking{
-        metric (type: "Relevance", weight: 1, weighted: false, direction: Constants.BOTH){
-            orig (type: "variable", label: "actor")
-            dest(type: "node", id: "776408")
+        metric (type: "Connectivity", weight: 1, c: 3, direction: Constants.BOTH, rw: false, steps: 200){
+            orig (type: "variable", label: "subject")
+            dest(type: "node", id: "776366") // 687584 = id for http://data.linkedmdb.org/resource/writer/13251 (stephen king)
         }
     }
 }
-
-
-
 
