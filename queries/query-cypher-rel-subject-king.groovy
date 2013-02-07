@@ -15,7 +15,7 @@ RETURN DISTINCT subject;
 RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
 """
     ranking{
-        metric (type: "Connectivity", weight: 1, c: 3, direction: Constants.BOTH, rw: false, steps: 200){
+        metric (type: "Relevance", weight: 1, c: 2, direction: Constants.BOTH, rw: false, steps: 200){
             orig (type: "variable", label: "subject")
             dest(type: "node", id: "776366") // 687584 = id for http://data.linkedmdb.org/resource/writer/13251 (stephen king)
         }

@@ -14,14 +14,13 @@ import groovy.transform.InheritConstructors
 
 @InheritConstructors
 class RandomWalkerSA extends SA {
-    def Actv = [:].withDefault{0.0f} //activated nodes
-    int seed = 1
+    def Actv = new ActivatedNetwork(this.c, this.seed) //activated nodes
 
     float process(orig, dest){
 
-        this.Actv = [:].withDefault{0.0f}
+        this.Actv.reset()
 
-        this.Actv[orig] = this.a
+        this.Actv.add(orig, this.a, 0)
 
 
         def rw = new RW(this, orig, dest, this.seed) //, 10
@@ -31,11 +30,13 @@ class RandomWalkerSA extends SA {
             rw.step()
             //println this.Actv[dest]
         }
-        if (this.Actv[dest]) println "${orig} -> ${this.Actv[dest]}"
+        if (this.Actv.network[dest]) println "${orig} -> ${this.Actv.network[dest]}"
+        println "----------------------------------------------------------------${orig} -> ${this.Actv.network[dest]}"
 
-        return this.Actv[dest]
+        return (this.Actv.network[dest].potential)?this.Actv.network[dest].potential:0.0
 
     }
 
 
 }
+

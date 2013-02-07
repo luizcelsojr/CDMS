@@ -36,20 +36,22 @@ class RW {
 
 
     void reset(){
-        this.radius = 0
-        this.current = this.orig
-        this.sa.Actv[this.orig] = this.sa.a
+
+        this.current = this.sa.Actv.getRandom()
+        //if (!this.sa.Actv.network[this.current].radius) println "XXXXXXXXXXXXXXXXXX ${this.sa.Actv.network[this.current]} ${this.current} \n ${this.sa.Actv.network}"
+        this.radius = this.sa.Actv.network[this.current].radius
+        //this.sa.Actv.network[this.orig].potential = this.sa.a
     }
 
 
     def step(){
 
-        if (this.radius >= this.sa.c)  this.reset()
+        while (this.radius >= this.sa.c)  this.reset()
         //println "current node ${this.current}, previou radius = ${this.radius}"
 
         this.radius++
 
-        if (this.sa.Actv[this.current] < this.sa.t) {
+        if (this.sa.Actv.network[this.current].potential < this.sa.t) {
             this.reset()
             return
         }
@@ -68,16 +70,19 @@ class RW {
             def next = neighbors[this.r.nextInt(n.toInteger())] //get random element
             //println "next node = ${next[-1]}, current radius = ${this.radius}"
 
-            def Atransfer = (this.sa.dividePotential) ? (this.sa.Actv[this.current] * this.sa.d)/n : (this.sa.Actv[this.current] * this.sa.d)
+            Float Atransfer = (this.sa.dividePotential) ? (this.sa.Actv.network[this.current].potential * this.sa.d)/n : (this.sa.Actv.network[this.current].potential * this.sa.d)
             // it is the path, it[-1] is the outV
-            this.sa.Actv[next[-1]] += (this.sa.weighted) ? Atransfer * next[1].getProperty(this.sa.weightProp).toFloat() : Atransfer
+            if (this.sa.weighted) Atransfer = Atransfer * next[1].getProperty(this.sa.weightProp).toFloat()
+            this.sa.Actv.add(next[-1], Atransfer, this.radius)
+            //this.sa.Actv.network[next[-1]].potential += (this.sa.weighted) ? Atransfer * next[1].getProperty(this.sa.weightProp).toFloat() : Atransfer
+            //this.sa.Actv.network[next[-1]].radius = this.radius
 
             if (next[-1] == this.dest){
                 reset()
                 return
             }
 
-            this.sa.Actv[this.current] = 0.0f
+            //this.sa.Actv.network[this.current].potential = 0.0f
 
             this.current = next[-1]
 

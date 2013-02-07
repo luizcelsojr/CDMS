@@ -26,7 +26,8 @@ class SA {
     Boolean dividePotential = false // whether activation potential will be divided among neighbors (true) or passed integrally (false)
     //def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
     def follow = [] //list of relationships to follow
-    int steps = 5
+    int steps = 5 //for randomSA
+    int seed = 1 //for randomSA
     int maxIterations = 100000
     Boolean rw = false //whether this is a random walker SA
 
