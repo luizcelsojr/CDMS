@@ -14,7 +14,7 @@ RANK BY 1 WRELEVANCE (n,_117)
 --RANK BY WCONNECTIVITY (n,_117)
 """
     ranking{
-        metric (type: "Relevance", weight: 1, weighted: true, weightProp: "Weight", direction: Constants.INBOUND){
+        metric (type: "Relevance", weight: 1, weighted: true, weightProp: "Weight", direction: Constants.INBOUND, shortestpaths: true){ //, shortestpaths: true
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         }
@@ -22,7 +22,7 @@ RANK BY 1 WRELEVANCE (n,_117)
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         } */
-        metric (type: "Connectivity", weight: 2, weighted: true, weightProp: "Weight", direction: Constants.INBOUND){
+        metric (type: "Connectivity", weight: 2, weighted: true, weightProp: "Weight", direction: Constants.INBOUND, shortestpaths: true){//, shortestpaths: true
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         }

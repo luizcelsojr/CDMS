@@ -29,7 +29,9 @@ class SA {
     int steps = 5 //for randomSA
     int seed = 1 //for randomSA
     int maxIterations = 100000
+
     Boolean rw = false //whether this is a random walker SA
+    Boolean shortestpaths = false //whether this is a shortest-paths SA
 
 
     def orig

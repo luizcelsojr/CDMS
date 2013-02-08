@@ -3,6 +3,7 @@ package br.unicamp.ic.lis.cdms
 import br.unicamp.ic.lis.cdms.queryproc.Parser
 import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
 import br.unicamp.ic.lis.cdms.sa.SA
+import br.unicamp.ic.lis.cdms.sa.ShortestPathsSA
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
@@ -27,7 +28,7 @@ class CypherPlusQueryProc{
 	def CypherPlusQueryProc(db_path){
 		this.neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
 		this.graph = new Neo4jGraph(this.neoGraphDB)
-		
+
 		registerShutdownHook( this.neoGraphDB );
 		rank = params = regular = ""
 		rankings = [:]
@@ -117,10 +118,14 @@ class CypherPlusQueryProc{
     SA getSA(context){
         switch(context.@type.toLowerCase()){
             case "relevance":
-                return (context.@rw)? new RandomWalkerSA(context, true): new SA(context, true)
+                if (context.@rw) return new RandomWalkerSA(context, true)
+                if (context.@shortestpaths) return new ShortestPathsSA(context, true, this.neoGraphDB)
+                return new SA(context, true)
                 break
             case "connectivity":
-                return (context.@rw)? new RandomWalkerSA(context, false): new SA(context, false)
+                if (context.@rw) return new RandomWalkerSA(context, false)
+                if (context.@shortestpaths) return new ShortestPathsSA(context, false, this.neoGraphDB)
+                return new SA(context, false)
                 break
             case "influence":
                 processQueryInfluence()

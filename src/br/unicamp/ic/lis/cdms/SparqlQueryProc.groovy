@@ -48,7 +48,7 @@
             this.parsedQuery.ranking.metric.each{
                 processRegular()
                 if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
-                    this.processMetric(it, getOrigs(it), getDest(it))
+                    this.processMetric(it, getVariable(it, 'orig'), getNode(it, 'dest'))
                 }
                 else{println "Invalid parameters (" + it + ")"}
 
@@ -65,21 +65,21 @@
             }
         }
 
-        def getDest(context){
+        def getNode(context, source){
             Gremlin.load()
-            def destid = context.dest[0].@id
-            return this.graph.v(destid)
+            def nodeid = context."${source}"[0].@id
+            return this.graph.v(nodeid)
         }
 
-        def getOrigs(context){
+        def getVariable(context, source){
             Gremlin.load()
-            def origs = []
+            def values = []
             while(this.regResults.hasNext()) {
-                def v = this.graph.v(this.regResults.next().getValue(context.orig[0].@label));
-                origs.add(v);
+                def v = this.graph.v(this.regResults.next().getValue(context."${source}"[0].@label));
+                values.add(v);
 
             }
-            return origs
+            return values
         }
 
         SA getSA(context){
