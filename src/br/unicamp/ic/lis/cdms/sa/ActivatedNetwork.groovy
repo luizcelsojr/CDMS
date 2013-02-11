@@ -15,6 +15,8 @@ class ActivatedNetwork {
     def r
     def maxRadius
 
+    def ActivatedNetwork(){}
+
     ActivatedNetwork(int maxRadius, int seed){
         this.maxRadius = maxRadius
 

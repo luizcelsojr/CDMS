@@ -22,7 +22,7 @@ RANK BY 1 WRELEVANCE (n,_117)
 --RANK BY WCONNECTIVITY (n,_117)
 """
     ranking{
-        metric (type: "Relevance", weight: 1, weighted: false, direction: Constants.BOTH){
+        metric (type: "Relevance", weight: 1, weighted: false, c: 4, direction: Constants.BOTH, shortestpaths: false){//, shortestpaths: true
             orig (type: "variable", label: "actor")
             dest(type: "node", id: "776408")
         }

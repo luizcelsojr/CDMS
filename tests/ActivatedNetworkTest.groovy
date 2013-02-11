@@ -9,7 +9,7 @@ import com.tinkerpop.gremlin.groovy.Gremlin
  * Time: 1:41 PM
  * To change this template use File | Settings | File Templates.
  */
-class ActivatedNetworkTest  extends GroovyTestCase{
+class ActivatedNetworkTest { // extends GroovyTestCase
 
     void testActivatedNetwork(){
         Gremlin.load()
