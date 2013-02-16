@@ -118,14 +118,20 @@ class CypherPlusQueryProc{
     SA getSA(context){
         switch(context.@type.toLowerCase()){
             case "relevance":
-                if (context.@rw) return new RandomWalkerSA(context, true)
+                def saClass = SA
+                if (context.@sa) saClass = 'br.unicamp.ic.lis.cdms.sa.' + context.@sa as Class
+
                 if (context.@shortestpaths) return new ShortestPathsSA(context, true, this.neoGraphDB)
-                return new SA(context, true)
+                if (context.@rw) return new RandomWalkerSA(context, true)
+                return saClass.newInstance(context, true)
                 break
             case "connectivity":
-                if (context.@rw) return new RandomWalkerSA(context, false)
+                def saClass = SA
+                if (context.@sa) saClass = 'br.unicamp.ic.lis.cdms.sa.' + context.@sa as Class
+
                 if (context.@shortestpaths) return new ShortestPathsSA(context, false, this.neoGraphDB)
-                return new SA(context, false)
+                if (context.@rw) return new RandomWalkerSA(context, false)
+                return saClass.newInstance(context, false)
                 break
             case "influence":
                 processQueryInfluence()

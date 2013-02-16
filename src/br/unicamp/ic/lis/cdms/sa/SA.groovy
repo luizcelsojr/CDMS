@@ -32,6 +32,7 @@ class SA {
 
     Boolean rw = false //whether this is a random walker SA
     Boolean shortestpaths = false //whether this is a shortest-paths SA
+    String sa = "SA" //which SA class to use
 
 
     def orig
