@@ -14,10 +14,11 @@ import groovy.transform.InheritConstructors
  */
 @InheritConstructors
 class InverseSA  extends SA {
+    def A = [:].withDefault{0.0f} //activated nodes
 
     float process(dest, orig){
 
-        def A = [:].withDefault{0.0f} //activated nodes
+
 
         def destid = dest.id //.toString()
 
