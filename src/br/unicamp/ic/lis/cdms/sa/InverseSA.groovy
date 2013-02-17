@@ -14,9 +14,11 @@ import groovy.transform.InheritConstructors
  */
 @InheritConstructors
 class InverseSA  extends SA {
+    float process(orig, dest){
+        return super.process(dest, orig)
+    }
 
-
-    float process(dest, orig){
+    float processA(dest, orig){
 
         if (dest.id == orig.id) return this.a
 

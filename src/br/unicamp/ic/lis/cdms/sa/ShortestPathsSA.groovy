@@ -61,7 +61,7 @@ class ShortestPathsSA extends SA {
             //paths.clone().collect{it[radius]}
             //def ids = paths.clone().collect{it.head()}
             //paths = paths.each{it.remove(0)}.findAll{it.size()}
-            println "ids[${radius}] ${ids}"
+            //println "ids[${radius}] ${ids}"
 
 
             //if (this.direction != Constants.OUTBOUND) neighbors.addAll(it.inE.filter{it.id in ids}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
@@ -111,7 +111,7 @@ START d=node(${orig.id}), e=node(${dest.id})
 MATCH p = allShortestPaths( d-[*..${this.c}]-e )
 RETURN p
 """
-        println query
+        //println query
 
         def results = engine.execute(query);
 
@@ -123,7 +123,7 @@ RETURN p
             paths.add(path)
         }
 
-        println paths
+        //println paths
 
         //System.exit(1)
         return paths
