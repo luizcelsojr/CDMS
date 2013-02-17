@@ -54,6 +54,7 @@ class SA {
     }
 
     float process(orig, dest){
+        if (dest.id == orig.id) return this.a
 
         def A = [:].withDefault{0.0f} //activated nodes
 
