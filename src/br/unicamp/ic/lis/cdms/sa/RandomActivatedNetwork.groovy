@@ -9,38 +9,43 @@ import com.tinkerpop.blueprints.Vertex
  * Time: 2:23 PM
  * To change this template use File | Settings | File Templates.
  */
-class ActivatedNetwork {
+class RandomActivatedNetwork {
     def network = [:].withDefault{[:]}
+    def nodeList = []
+    def r
+    def maxRadius
 
-    def ActivatedNetwork(){}
+    def RandomActivatedNetwork(){}
+
+    RandomActivatedNetwork(int maxRadius, int seed){
+        this.maxRadius = maxRadius
+
+        this.r = new Random(seed + 1) //just to make it different from the seed for RandomWalker... doesnt really matter
+    }
 
 
-    boolean addOrUpdate (Vertex v, Vertex previous, Float potential){
+    boolean add (Vertex v, Float potential, int radius){
         if (this.network.containsKey(v)) {
             this.network[v].potential+=potential
-            this.network[v].totalPotential+=potential
-            this.network[v].previous.add(previous)
             return true
         } else{
             this.network[v].node = v
             this.network[v].potential = potential
-            this.network[v].totalPotential = potential
-            this.network[v].previous = [].add(previous)
+            this.network[v].radius = radius
+            if (radius < this.maxRadius) this.nodeList.add(v)
             return true
         }
+
     }
 
     void reset(){
         this.network = [:].withDefault{[:]}
+        this.nodeList = []
+
     }
 
-    Float getAndDrainPotential(Vertex v){
-        def potential = 0.0f
-        if (this.network.containsKey(v)) {
-            potential = this.network[v].potential
-            this.network[v].potential = 0.0f
-        }
-        return potential
+    Vertex getRandom(){
+        return nodeList[this.r.nextInt(nodeList.size())]
     }
 
 

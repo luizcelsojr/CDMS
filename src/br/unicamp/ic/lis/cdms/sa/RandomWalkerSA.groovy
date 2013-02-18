@@ -1,7 +1,6 @@
 package br.unicamp.ic.lis.cdms.sa
 
 import br.unicamp.ic.lis.cdms.randomwalker.RW
-import br.unicamp.ic.lis.cdms.util.Constants
 import groovy.transform.InheritConstructors
 
 /**
@@ -14,7 +13,7 @@ import groovy.transform.InheritConstructors
 
 @InheritConstructors
 class RandomWalkerSA extends SA {
-    def Actv = new ActivatedNetwork(this.c, this.seed) //activated nodes
+    def Actv = new RandomActivatedNetwork(this.c, this.seed) //activated nodes
 
     float process(orig, dest){
 

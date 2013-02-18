@@ -1,4 +1,4 @@
-import br.unicamp.ic.lis.cdms.sa.ActivatedNetwork
+import br.unicamp.ic.lis.cdms.sa.RandomActivatedNetwork
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import com.tinkerpop.gremlin.groovy.Gremlin
 
@@ -17,7 +17,7 @@ class ActivatedNetworkTest { // extends GroovyTestCase
 
         def v = g.v(1)
 
-        def AN = new ActivatedNetwork()
+        def AN = new RandomActivatedNetwork()
         AN.r = new Random(1)
 
         AN.add(v)

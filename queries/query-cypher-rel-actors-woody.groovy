@@ -22,7 +22,7 @@ RANK BY 1 WRELEVANCE (n,_117)
 --RANK BY WCONNECTIVITY (n,_117)
 """
     ranking{
-        metric (type: "Connectivity", weight: 1, weighted: false, c: 2, direction: Constants.OUTBOUND, shortestpaths: false , sa:'InverseSA'){//, shortestpaths: true,  direction:Constants.INBOUND, sa:'InverseSA', , follow: ['http://data.linkedmdb.org/resource/movie/actor', 'http://xmlns.com/foaf/0.1/made']
+        metric (type: "Connectivity", weight: 1, weighted: false, c: 4, direction: Constants.BOTH, shortestpaths: false ){//, shortestpaths: true,  direction:Constants.INBOUND, sa:'InverseSA', , follow: ['http://data.linkedmdb.org/resource/movie/actor', 'http://xmlns.com/foaf/0.1/made']
             orig (type: "variable", label: "actor")
             dest(type: "node", id: "776408")
         }
