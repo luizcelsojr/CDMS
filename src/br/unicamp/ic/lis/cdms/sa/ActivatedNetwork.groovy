@@ -19,14 +19,28 @@ class ActivatedNetwork {
         if (this.network.containsKey(v)) {
             this.network[v].potential+=potential
             this.network[v].totalPotential+=potential
-            this.network[v].previous.add(previous)
+            if (!this.network[v].previous.contains(previous)) this.network[v].previous.add(previous)
             return true
         } else{
             this.network[v].node = v
             this.network[v].potential = potential
             this.network[v].totalPotential = potential
-            this.network[v].previous = [].add(previous)
+            this.network[v].previous = []
+            this.network[v].previous.add(previous)
             return true
+
+        }
+    }
+
+    boolean setPotential (Vertex v, Float potential){
+        if (this.network.containsKey(v)) {
+            this.network[v].potential = potential
+            this.network[v].totalPotential = potential
+            return true
+        } else{
+            println "ups, something went wrong. go get a cup of coffee. then stop being lazy and use proper exceptions"
+            return false
+
         }
     }
 
@@ -43,5 +57,27 @@ class ActivatedNetwork {
         return potential
     }
 
+    Float getPotential(Vertex v){
+        def potential = 0.0f
+        if (this.network.containsKey(v)) {
+            potential = this.network[v].potential
+        }
+        return potential
+    }
+
+    Float getTotalPotential(Vertex v){
+        def potential = 0.0f
+        if (this.network.containsKey(v)) {
+            potential = this.network[v].totalPotential
+        }
+        return potential
+    }
+
+    List getPrevious(Vertex v){
+        if (this.network.containsKey(v)) {
+            return this.network[v].previous
+        }
+        return []
+    }
 
 }
