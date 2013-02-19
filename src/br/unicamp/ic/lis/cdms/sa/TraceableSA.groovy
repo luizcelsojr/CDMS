@@ -13,14 +13,31 @@ import groovy.transform.InheritConstructors
 @InheritConstructors
 class TraceableSA extends SA {
     def Actv = new ActivatedNetwork() //activated nodes
+    def prevOrig = null
 
 
     float boomerangProcess(orig, dest){
-        return process(orig, dest) + reverseProcess(orig, dest)
+        return process(orig, dest) + reversePathsProcess(orig, dest)  //TODO: will erroneously return 0 if there is no path in process()
     }
 
     float process(orig, dest){
+        /*if (orig == prevOrig) {
+            println 'free ride!!!!'
+            return Actv.getTotalPotential(dest)
+        } else {
+            Actv.reset()
+            prevOrig = orig
+            return regularProcess(orig, dest)
+        }
+        */
         Actv.reset()
+        prevOrig = orig
+        return regularProcess(orig, dest) + reversePathsProcess(orig, dest)
+
+
+    }
+
+    float regularProcess(orig, dest){
 
         if (dest.id == orig.id) return this.a
 
@@ -33,6 +50,7 @@ class TraceableSA extends SA {
                         .transform{
                             def neighbors = []
                             def current = it
+
                             if (this.direction != Constants.OUTBOUND) neighbors.addAll(it.inE.filter{(this.follow)?it.label in this.follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
                             if (this.direction != Constants.INBOUND) neighbors.addAll(it.outE.filter{(this.follow)?it.label in this.follow: true}.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
 
@@ -58,7 +76,52 @@ class TraceableSA extends SA {
 
     }
 
+
     float reverseProcess(dest, orig){ //orig and dest inverted for convenience
+
+        if (dest.id == orig.id) return this.a
+
+        def direction = Constants.BOTH
+        if (this.direction == Constants.OUTBOUND) direction = Constants.INBOUND
+        if (this.direction == Constants.INBOUND) direction = Constants.OUTBOUND
+
+        def destid = dest.id //.toString()
+
+        Actv.addOrUpdate(orig, null, this.a)
+
+        orig.as('start')
+                        .filter{(Actv.getPotential(it) > this.t)} // and (countIterations < this.maxIterations)
+                        .transform{
+                            def neighbors = []
+                            def current = it
+
+                            if (direction != Constants.OUTBOUND) neighbors.addAll(it.inE.filter{(this.follow)?it.label in this.follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
+                            if (direction != Constants.INBOUND) neighbors.addAll(it.outE.filter{(this.follow)?it.label in this.follow: true}.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
+
+                            def n = neighbors.size().toFloat()
+
+                            Float Apotential = Actv.getAndDrainPotential(current)
+                            Float Atransfer = (this.dividePotential) ? (Apotential * this.d)/n : (Apotential * this.d)
+                            Float AtoNeighbor = 0.0f
+                            neighbors.each{
+                                // it is the path, it[-1] is the outV
+                                AtoNeighbor = (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
+                                Actv.addOrUpdate(it[-1], current, AtoNeighbor)
+                            }
+                            neighbors.collect{it[-1]}
+                        }.scatter
+                .filter{it.id!=destid}
+                .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
+                        .loop('start'){it.loops<=this.c}.iterate() //println "it.object.id=${it.object.id}";
+
+
+        return Actv.getTotalPotential(dest)
+
+
+    }
+
+
+    float reversePathsProcess(dest, orig){ //orig and dest inverted for convenience
 
         if (dest.id == orig.id) return this.a
 
@@ -81,9 +144,9 @@ class TraceableSA extends SA {
 
                     def previous = Actv.getPrevious(current)
 
-                    neighbors = neighbors.grep{it[-1] in previous}
-
                     def n = neighbors.size().toFloat()
+
+                    neighbors = neighbors.grep{it[-1] in previous}
 
                     Float Apotential = Actv.getAndDrainPotential(current)
                     Float Atransfer = (this.dividePotential) ? (Apotential * this.d)/n : (Apotential * this.d)

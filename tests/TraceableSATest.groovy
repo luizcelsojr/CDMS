@@ -70,7 +70,7 @@ class TraceableSATest extends GroovyTestCase{
         args['dividePotential'] = true
         args['follow'] = ['created', 'non-existent']
         args['c'] = 3
-        runSA(args, this.g.v(1), this.g.v(5), ((((((100.0/1.0)*0.9)/3.0)*0.9))/2.0)*0.9)
+        runSA(args, this.g.v(1), this.g.v(5), 2 * ((((((100.0/1.0)*0.9)/3.0)*0.9))/2.0)*0.9)
 
     }
 

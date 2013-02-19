@@ -20,7 +20,7 @@ LIMIT 200
 RANK BY RELEVANCE (?a,<http://data.linkedmdb.org/resource/director/8501>)
 """
     ranking{
-        metric (type: "Relevance", weight: 1, rw: false, steps: 150, seed: 2,  direction:Constants.INBOUND, follow: ['http://data.linkedmdb.org/resource/movie/actor', 'http://xmlns.com/foaf/0.1/made']){
+        metric (type: "Relevance", weight: 1, rw: false, steps: 150, seed: 2,  direction:Constants.BOTH){ //, follow: ['http://data.linkedmdb.org/resource/movie/actor', 'http://xmlns.com/foaf/0.1/made']
             orig (type: "variable", label: "a")
             dest(type: "node", id: "http://data.linkedmdb.org/resource/director/8501")
         }

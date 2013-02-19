@@ -4,6 +4,7 @@ import br.unicamp.ic.lis.cdms.queryproc.Parser
 import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
 import br.unicamp.ic.lis.cdms.sa.SA
 import br.unicamp.ic.lis.cdms.sa.ShortestPathsSA
+import br.unicamp.ic.lis.cdms.sa.TraceableSA
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
@@ -123,6 +124,12 @@ class CypherPlusQueryProc{
 
                 if (context.@shortestpaths) return new ShortestPathsSA(context, true, this.neoGraphDB)
                 if (context.@rw) return new RandomWalkerSA(context, true)
+                return saClass.newInstance(context, true)
+                break
+            case "rrelevance":
+                def saClass = TraceableSA
+                if (context.@sa) saClass = 'br.unicamp.ic.lis.cdms.sa.' + context.@sa as Class
+
                 return saClass.newInstance(context, true)
                 break
             case "connectivity":
