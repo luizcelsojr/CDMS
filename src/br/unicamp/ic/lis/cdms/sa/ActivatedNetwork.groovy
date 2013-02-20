@@ -34,12 +34,12 @@ class ActivatedNetwork {
 
     boolean setPotential (Vertex v, Float potential){
         if (this.network.containsKey(v)) {
-            this.network[v].potential = potential
-            this.network[v].totalPotential = potential
+            this.network[v].potential += potential
+            this.network[v].totalPotential += potential
             return true
         } else{
             addOrUpdate(v, null, potential)
-            println "ups, something went wrong. go get a cup of coffee. then stop being lazy and use proper exceptions"
+            //println "ups, something went wrong. go get a cup of coffee. then stop being lazy and use proper exceptions"
             return false
 
         }
@@ -47,6 +47,13 @@ class ActivatedNetwork {
 
     void reset(){
         this.network = [:].withDefault{[:]}
+    }
+
+    void resetPotential(){
+        this.network.each{ key,value ->
+            this.network[key].potential = 0.0f
+            this.network[key].totalPotential = 0.0f
+        }
     }
 
     Float getAndDrainPotential(Vertex v){

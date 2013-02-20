@@ -14,6 +14,7 @@ import groovy.transform.InheritConstructors
 class TraceableSA extends SA {
     def Actv = new ActivatedNetwork() //activated nodes
     def prevOrig = null
+    def results = [:]
 
 
     float boomerangProcess(orig, dest){
@@ -21,24 +22,40 @@ class TraceableSA extends SA {
     }
 
     float process(orig, dest){
-        /*if (orig == prevOrig) {
-            println 'free ride!!!!'
-            return Actv.getTotalPotential(dest)
+        if (orig == prevOrig) { //(false){//
+            //println 'free ride!!!!'
+
+            def regular = this.results[dest]
+            def reverse = reversePathsProcess(orig, dest)
+            //println "regular=${regular} - reverse = ${reverse}"
+            return regular + reverse
         } else {
             Actv.reset()
             prevOrig = orig
-            return regularProcess(orig, dest)
+
+            def regular = regularProcess(orig, dest)
+            def reverse = reversePathsProcess(orig, dest)
+            //println "regular=${regular} - reverse = ${reverse}"
+            return regular + reverse
+
         }
-        */
-        Actv.reset()
+        /*Actv.reset()
         prevOrig = orig
-        return regularProcess(orig, dest) + reversePathsProcess(orig, dest)
+        def regular = regularProcess(orig, dest)
+        def reverse = reverseProcess(orig, dest)
+        println "regular=${regular} - reverse = ${reverse}"
+        return regular + reverse   */
+    }
 
-
+    def backupResults(){
+        //println "yoda: must one time run"
+        this.dests.each{
+            this.results[it] = Actv.getTotalPotential(it)
+        }
     }
 
     float regularProcess(orig, dest){
-        println "regularProcess(orig=${orig}, dest=${dest})"
+        //println "regularProcess(orig=${orig}, dest=${dest})"
 
         if (dest.id == orig.id) return this.a
 
@@ -66,8 +83,7 @@ class TraceableSA extends SA {
                                 Actv.addOrUpdate(it[-1], current, AtoNeighbor)
                             }
                             neighbors.collect{it[-1]}
-                        }.scatter
-                .filter{it.id!=destid}
+                        }.scatter  //.filter{it.id!=destid}
                 .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
                         .loop('start'){it.loops<=this.c}.iterate() //println "it.object.id=${it.object.id}";
 
@@ -79,7 +95,7 @@ class TraceableSA extends SA {
 
 
     float reverseProcess(dest, orig){ //orig and dest inverted for convenience
-        println "reverseProcess(dest=${dest}, orig=${orig})"
+        //println "reverseProcess(dest=${dest}, orig=${orig})"
 
         if (dest.id == orig.id) return this.a
 
@@ -89,8 +105,11 @@ class TraceableSA extends SA {
 
         def destid = dest.id //.toString()
 
+        if (!this.results) backupResults()
+        Actv.resetPotential()
         Actv.setPotential(orig, this.a)
         Actv.setPotential(dest, 0.0f)
+
 
         orig.as('start')
                         .filter{(Actv.getPotential(it) > this.t)} // and (countIterations < this.maxIterations)
@@ -112,8 +131,7 @@ class TraceableSA extends SA {
                                 Actv.setPotential(it[-1], AtoNeighbor)
                             }
                             neighbors.collect{it[-1]}
-                        }.scatter
-                .filter{it.id!=destid}
+                        }.scatter //.filter{it.id!=destid}
                 .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
                         .loop('start'){it.loops<=this.c}.iterate() //println "it.object.id=${it.object.id}";
 
@@ -125,7 +143,7 @@ class TraceableSA extends SA {
 
 
     float reversePathsProcess(dest, orig){ //orig and dest inverted for convenience
-        println "reversePathsProcess(dest=${dest}, orig=${orig})"
+        //println "reversePathsProcess(dest=${dest}, orig=${orig})"
 
         if (dest.id == orig.id) return this.a
 
@@ -135,6 +153,8 @@ class TraceableSA extends SA {
 
         def destid = dest.id //.toString()
 
+        if (!this.results) backupResults()
+        Actv.resetPotential()
         Actv.setPotential(orig, this.a)
         Actv.setPotential(dest, 0.0f)
 
@@ -161,8 +181,7 @@ class TraceableSA extends SA {
                         Actv.setPotential(it[-1], AtoNeighbor)
                     }
                     neighbors.collect{it[-1]}
-                }.scatter
-                .filter{it.id!=destid}
+                }.scatter //.filter{it.id!=destid}
                 .filter{it.map()['kind'] != 'literal'} //must be 'uri' for SPARQL queries to work. not necessary for cypher
                 .loop('start'){it.loops<=this.c}.iterate() //println "it.object.id=${it.object.id}";
 

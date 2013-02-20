@@ -13,7 +13,7 @@ MATCH
 (movie)-[:`http://data.linkedmdb.org/resource/movie/initial_release_date`]->(date)
 WHERE date.value =~ '199.*'
 RETURN DISTINCT actor
-LIMIT 1000;
+LIMIT 2000;
 """
     rank  """
 RANK BY 1 WRELEVANCE (n,_117)

@@ -19,11 +19,12 @@
 import br.unicamp.ic.lis.cdms.benchmark.Timer
 import br.unicamp.ic.lis.cdms.sa.InverseSA
 import br.unicamp.ic.lis.cdms.sa.SA
+import br.unicamp.ic.lis.cdms.sa.TraceableSA
 import br.unicamp.ic.lis.cdms.util.Constants
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import com.tinkerpop.gremlin.groovy.Gremlin
 
-class InverseSATest{ // extends GroovyTestCase
+class InverseSATest extends GroovyTestCase{ // extends GroovyTestCase
     private sa
     def defaultArgs = [:]
     def g
@@ -77,25 +78,27 @@ class InverseSATest{ // extends GroovyTestCase
 
     def runSA (args, orig_, dest_, expected){
         //this.sa = new SA(graph: g, follow: Constants.INBOUND)
-        def sa = new InverseSA()
+        def sa = new TraceableSA()
         args.each{ key, value  ->
             sa.setProperty(key, value)
         }
 
-        def isa = new SA()
+        def isa = new TraceableSA()
         args.each{ key, value  ->
             isa.setProperty(key, value)
         }
 
+        isa.inverseDirection()
+
         def r = new Random()
 
-        9.times{
+        30.times{
             def orig = this.g.v(r.nextInt(6) + 1)
             def dest = this.g.v(r.nextInt(6) + 1)
             println "orig = ${orig} --> dest = ${dest}"
 
 
-            assertEquals(isa.process(orig, dest), sa.process(orig, dest), 0.001f)
+            assertEquals(isa.inverseProcess(orig, dest), sa.process(orig, dest), 0.001f)
 
 
         }

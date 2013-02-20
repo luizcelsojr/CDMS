@@ -37,6 +37,7 @@ class SA {
 
     def orig
     def dest
+    def dests = []//makes SA aware of other dest to backup results (important for RRelevance)
 
     static {
         Gremlin.load()
@@ -62,11 +63,18 @@ class SA {
         }
     }
 
+    def registerDests(dests){
+        this.dests = dests
+
+    }
+
     float inverseProcess(orig, dest){
         process(dest, orig)
     }
 
     float process(orig, dest){
+        println "no no"
+        System.exit(1)
         if (dest.id == orig.id) return this.a
 
         def A = [:].withDefault{0.0f} //activated nodes
