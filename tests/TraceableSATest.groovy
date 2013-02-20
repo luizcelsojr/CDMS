@@ -81,8 +81,10 @@ class TraceableSATest extends GroovyTestCase{
             sa.setProperty(key, value)
         }
 
+        sa.inverseDirection()
+
         def potential
-        def time = Timer.closureBenchmark{potential = sa.boomerangProcess(orig, dest)}
+        def time = Timer.closureBenchmark{potential = sa.inverseProcess(orig, dest)}
 
         println "total time: ${time}"
 

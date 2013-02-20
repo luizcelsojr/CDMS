@@ -38,6 +38,7 @@ class ActivatedNetwork {
             this.network[v].totalPotential = potential
             return true
         } else{
+            addOrUpdate(v, null, potential)
             println "ups, something went wrong. go get a cup of coffee. then stop being lazy and use proper exceptions"
             return false
 

@@ -38,6 +38,7 @@ class TraceableSA extends SA {
     }
 
     float regularProcess(orig, dest){
+        println "regularProcess(orig=${orig}, dest=${dest})"
 
         if (dest.id == orig.id) return this.a
 
@@ -78,6 +79,7 @@ class TraceableSA extends SA {
 
 
     float reverseProcess(dest, orig){ //orig and dest inverted for convenience
+        println "reverseProcess(dest=${dest}, orig=${orig})"
 
         if (dest.id == orig.id) return this.a
 
@@ -87,7 +89,8 @@ class TraceableSA extends SA {
 
         def destid = dest.id //.toString()
 
-        Actv.addOrUpdate(orig, null, this.a)
+        Actv.setPotential(orig, this.a)
+        Actv.setPotential(dest, 0.0f)
 
         orig.as('start')
                         .filter{(Actv.getPotential(it) > this.t)} // and (countIterations < this.maxIterations)
@@ -106,7 +109,7 @@ class TraceableSA extends SA {
                             neighbors.each{
                                 // it is the path, it[-1] is the outV
                                 AtoNeighbor = (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
-                                Actv.addOrUpdate(it[-1], current, AtoNeighbor)
+                                Actv.setPotential(it[-1], AtoNeighbor)
                             }
                             neighbors.collect{it[-1]}
                         }.scatter
@@ -122,6 +125,7 @@ class TraceableSA extends SA {
 
 
     float reversePathsProcess(dest, orig){ //orig and dest inverted for convenience
+        println "reversePathsProcess(dest=${dest}, orig=${orig})"
 
         if (dest.id == orig.id) return this.a
 

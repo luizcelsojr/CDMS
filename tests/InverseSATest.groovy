@@ -23,7 +23,7 @@ import br.unicamp.ic.lis.cdms.util.Constants
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import com.tinkerpop.gremlin.groovy.Gremlin
 
-class InverseSATest extends GroovyTestCase{
+class InverseSATest{ // extends GroovyTestCase
     private sa
     def defaultArgs = [:]
     def g

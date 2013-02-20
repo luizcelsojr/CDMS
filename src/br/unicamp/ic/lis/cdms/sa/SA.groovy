@@ -53,6 +53,19 @@ class SA {
         this.dividePotential = dividePotential
     }
 
+    def inverseDirection(){
+        if (this.direction == Constants.OUTBOUND) {
+            this.direction = Constants.INBOUND
+        }
+        else if (this.direction == Constants.INBOUND) {
+            this.direction = Constants.OUTBOUND
+        }
+    }
+
+    float inverseProcess(orig, dest){
+        process(dest, orig)
+    }
+
     float process(orig, dest){
         if (dest.id == orig.id) return this.a
 
