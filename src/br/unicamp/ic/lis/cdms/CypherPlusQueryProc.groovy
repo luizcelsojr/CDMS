@@ -161,7 +161,7 @@ class CypherPlusQueryProc{
 
             println "${context.@type} - ${(origs.size > 10)? origs[0..10].toString() + '...x ' + origs.size: origs}  --> ${dest}"
 
-            boolean inverse = false
+            boolean inverse = true
 
             if (inverse) {
                 sa.inverseDirection()
