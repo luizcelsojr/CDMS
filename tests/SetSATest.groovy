@@ -17,14 +17,12 @@
 
 //import groovy.util.*
 import br.unicamp.ic.lis.cdms.benchmark.Timer
-import br.unicamp.ic.lis.cdms.sa.InverseSA
-import br.unicamp.ic.lis.cdms.sa.SA
-import br.unicamp.ic.lis.cdms.sa.TraceableSA
+import br.unicamp.ic.lis.cdms.sa.SetSA
 import br.unicamp.ic.lis.cdms.util.Constants
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import com.tinkerpop.gremlin.groovy.Gremlin
 
-class InverseSATest extends GroovyTestCase{ // extends GroovyTestCase
+class SetSATest extends GroovyTestCase{
     private sa
     def defaultArgs = [:]
     def g
@@ -57,55 +55,39 @@ class InverseSATest extends GroovyTestCase{ // extends GroovyTestCase
         args = this.defaultArgs.clone()
         args['direction'] = Constants.OUTBOUND
         args['dividePotential'] = true
-        //runSA(args, this.g.v(1), this.g.v(5), ((((100.0/3.0)*0.9)/2.0)*0.9))
+        runSA(args, this.g.v(1), this.g.v(5), ((((100.0/3.0)*0.9)/2.0)*0.9))
 
         println "*** simple weighted SA ***"
         args = this.defaultArgs.clone()
         args['c'] = 1
         args['direction'] = Constants.INBOUND
         args['weighted'] = true
-        //runSA(args, this.g.v(3), this.g.v(4), 36.0)
+        runSA(args, this.g.v(3), this.g.v(4), 36.0)
 
         println "*** dividing potential unweighted SA, follow 'created' ***"
         args = this.defaultArgs.clone()
         args['direction'] = Constants.BOTH
-        args['dividePotential'] = false
+        args['dividePotential'] = true
         args['follow'] = ['created', 'non-existent']
         args['c'] = 3
         runSA(args, this.g.v(1), this.g.v(5), ((((((100.0/1.0)*0.9)/3.0)*0.9))/2.0)*0.9)
 
     }
 
-    def runSA (args, orig_, dest_, expected){
-        //this.sa = new SA(graph: g, follow: Constants.INBOUND)
-        def sa = new TraceableSA()
-        args.each{ key, value  ->
+    def runSA (args, orig, dest, expected){
+
+        def sa = new SetSA()
+        args.each{ key, value ->
             sa.setProperty(key, value)
         }
 
-        def isa = new TraceableSA()
-        args.each{ key, value  ->
-            isa.setProperty(key, value)
-        }
+        def potential
+        def time = Timer.closureBenchmark{potential = sa.process(orig, dest)}
 
-        isa.inverseDirection()
+        println "total time: ${time}"
 
-        def r = new Random()
-
-        30.times{
-            def orig = this.g.v(r.nextInt(6) + 1)
-            def dest = this.g.v(r.nextInt(6) + 1)
-            println "orig = ${orig} --> dest = ${dest}"
-
-
-            assertEquals(isa.inverseProcess(orig, dest), sa.process(orig, dest), 0.001f)
-
-
-        }
-
-
-
-
+        println "result: ${potential}"
+        assertEquals(expected, potential, 0.001)
 
 
 

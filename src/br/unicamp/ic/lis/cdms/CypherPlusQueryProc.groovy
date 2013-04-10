@@ -62,6 +62,10 @@ class CypherPlusQueryProc{
             else if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'map'){ //first param is variable, second is node/id
                 this.processMetric(it, getOrigs(it), getDestMap(it))
             }
+            else if (it.dest[0].@type == null){ //no dest -> set metric
+                this.processSetMetric(it, getOrigs(it))
+            }
+
             else{println "Invalid parameters (" + it + ")"}
 
         }
@@ -140,6 +144,12 @@ class CypherPlusQueryProc{
                 if (context.@rw) return new RandomWalkerSA(context, false)
                 return saClass.newInstance(context, false)
                 break
+            case "reputation":
+                def saClass = SetSA
+                if (context.@sa) saClass = 'br.unicamp.ic.lis.cdms.sa.' + context.@sa as Class
+
+                return saClass.newInstance(context, false)
+                break
             case "influence":
                 processQueryInfluence()
                 break
@@ -159,14 +169,16 @@ class CypherPlusQueryProc{
 
             def sa = getSA(context)
 
+
             println "${context.@type} - ${(origs.size > 10)? origs[0..10].toString() + '...x ' + origs.size: origs}  --> ${dest}"
 
-            boolean inverse = true
+            boolean inverse = false
 
             if (inverse) {
                 sa.inverseDirection()
-                sa.registerDests(origs)
+                sa.registerDests(origs) //added for rrelevance
             }
+
 
             origs.each{
                 if (inverse) result = sa.inverseProcess(it, dest)
@@ -182,6 +194,35 @@ class CypherPlusQueryProc{
 
 
 	}
+
+    def processSetMetric(context, origs){
+        Gremlin.load()
+        println "rank: weight=${context.@weight} ${context.@type} context: " + context;
+
+        def R = [:] //results
+        def maxResult = 0.0
+        def result = 0.0
+
+        def sa = getSA(context)
+        sa.registerOrigs(origs)
+
+        println "${context.@type} - ${(origs.size > 10)? origs[0..10].toString() + '...x ' + origs.size: origs} "
+
+        sa.process()
+        origs.each{
+            result = sa.getPotential(it)
+            if (result > maxResult) maxResult = result
+            R[it] = result
+        }
+        def normWeight = context.@weight/this.totalWeight
+
+        R.each{ key, value ->
+            this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
+        }
+
+
+    }
+
 
 	def processQueryRelvance_Old(){
 		Gremlin.load()

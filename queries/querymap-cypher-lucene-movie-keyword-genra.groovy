@@ -22,7 +22,7 @@ RETURN DISTINCT movie
             orig (type: "variable", label: "movie")
             dest (type: "map", mapper: "LuceneMapper", parameter: "my favorite films are matrix and avatar")
         }
-        metric (type: "Connectivity", weight: 1, c: 5, weighted: false, direction: Constants.BOTH, follow: ['http://www.w3.org/2004/02/skos/core#subject']){
+        metric (type: "Connectivity", weight: 1, c: 3, weighted: false, direction: Constants.BOTH, follow: ['http://www.w3.org/2004/02/skos/core#subject']){
             orig (type: "variable", label: "movie")
             dest (type: "node", id: '705541')  //virtual reality subject
         }
