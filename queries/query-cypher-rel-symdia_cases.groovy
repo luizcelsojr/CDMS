@@ -22,7 +22,7 @@ RANK BY 1 WRELEVANCE (n,_117)
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         } */
-        metric (type: "Connectivity", weight: 2, weighted: true, weightProp: "Weight", direction: Constants.INBOUND, shortestpaths: false, sa:'TraceableSA'){//, shortestpaths: true , sa:'TraceableSA'
+        metric (type: "Connectivity", weight: 3, weighted: true, weightProp: "Weight", direction: Constants.INBOUND, shortestpaths: false, sa:'TraceableSA'){//, shortestpaths: true , sa:'TraceableSA'
             orig (type: "variable", label: "n")
             dest(type: "node", id: "117")
         }

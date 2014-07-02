@@ -8,7 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
-    <orderEntry type="jdk" jdkName="1.7" jdkType="JavaSDK" />
+    <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.1" level="project" />
     <orderEntry type="library" name="Maven: com.tinkerpop.gremlin:gremlin-groovy:2.1.0" level="project" />
@@ -65,11 +65,7 @@
     <orderEntry type="library" name="Maven: net.fortytwo:flow:0.7" level="project" />
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-rio-n3:2.4.2" level="project" />
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-rio-turtle:2.4.2" level="project" />
-    <orderEntry type="library" name="Maven: info.aduna.commons:aduna-commons-io:2.10.0" level="project" />
-    <orderEntry type="library" name="Maven: info.aduna.commons:aduna-commons-text:2.7.0" level="project" />
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-rio-rdfxml:2.4.2" level="project" />
-    <orderEntry type="library" name="Maven: info.aduna.commons:aduna-commons-net:2.7.0" level="project" />
-    <orderEntry type="library" name="Maven: info.aduna.commons:aduna-commons-xml:2.7.0" level="project" />
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-rio-trig:2.4.2" level="project" />
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-rio-trix:2.4.2" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.0.4" level="project" />

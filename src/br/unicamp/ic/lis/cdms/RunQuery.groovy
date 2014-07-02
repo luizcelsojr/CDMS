@@ -7,7 +7,13 @@ import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.gremlin.groovy.Gremlin
 import net.fortytwo.sesametools.reposail.RepositorySail
 import org.openrdf.repository.RepositoryConnection
+
+
+
+
+/*
 import virtuoso.sesame2.driver.VirtuosoRepository
+
 
 def getSailConn(){
 	def VIRTUOSO_INSTANCE = "gaponga";
@@ -41,6 +47,8 @@ def getSail(){
 
 	sail;
 }
+
+ */
 
 def getGraph(){
 
@@ -99,7 +107,7 @@ def RunQ(args){
     def qp
 
 	switch ( language ) {
-		case "sparql":
+/*		case "sparql":
 
 			def VIRTUOSO_INSTANCE = "gaponga";
 			def VIRTUOSO_PORT = 1111;
@@ -118,7 +126,7 @@ def RunQ(args){
 			g = new SailGraph(sail)
 			
 			qp = new SparqlQueryProc(g, sc, rc)
-			break
+			break   */
 		case "cypher":
 			qp = new CypherPlusQueryProc(db_path)
 			//nc.shutdown();
