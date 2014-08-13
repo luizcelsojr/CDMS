@@ -12,7 +12,7 @@ import groovy.transform.InheritConstructors
  */
 @InheritConstructors
 class SetSA extends SA {
-    def A = [:].withDefault{0.0f} //activated nodes
+    //def A = [:].withDefault{0.0f} //activated nodes
     def Actv = new ActivatedNetwork() //activated nodes
 
     void process(){

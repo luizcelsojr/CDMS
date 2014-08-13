@@ -22,6 +22,7 @@ class SA {
     Float a = 100.0f
     String direction = Constants.BOTH //which direction the SA steps must follow
     Boolean weighted = false //whether edge weights must be multiplied to degrade the signal
+    Boolean desc = false //whether order must be reversed
     String weightProp = "weight" //property with containing edge weights
     Boolean dividePotential = false // whether activation potential will be divided among neighbors (true) or passed integrally (false)
     //def NOTFOLLOW = ["http://www.w3.org/1999/02/22-rdf-syntax-ns#type"]
@@ -33,6 +34,9 @@ class SA {
     Boolean rw = false //whether this is a random walker SA
     Boolean shortestpaths = false //whether this is a shortest-paths SA
     String sa = "SA" //which SA class to use
+
+    def fo = { a, d, n -> a * d} //function that calculates output potential
+    def fi = { currentV, newV -> currentV + newV} //function that calculates node potential given a new input potential
 
 
     def orig
@@ -53,6 +57,8 @@ class SA {
             this."$key" = value
         }
         this.dividePotential = dividePotential
+        if (dividePotential) this.fo = { a, d, n -> a*d/n}
+        //if (this.weighted) this.fi = { currentV, newV, w -> currentV + (newV*w)}
     }
 
     def inverseDirection(){
@@ -102,10 +108,10 @@ class SA {
                             /*
                             if (n > 1000 | n == 0) {//println "vaza ${it}.....";
                                 return []}*/
-                            def Atransfer = (this.dividePotential) ? (A[it] * this.d)/n : (A[it] * this.d)
+                            def Atransfer = this.fo(A[it],this.d,n)
                             neighbors.each{
                                 // it is the path, it[-1] is the outV
-                                A[it[-1]] += (this.weighted) ? Atransfer * it[1].getProperty(this.weightProp).toFloat() : Atransfer
+                                A[it[-1]] = (this.weighted) ? this.fi(A[it[-1]], Atransfer, it[1].getProperty(this.weightProp).toFloat()) : this.fi(A[it[-1]], Atransfer)
                             }
                             if (n) A[it] = 0.0f                         //.filter{it.id!=destid}
                             //println "A ${A}"

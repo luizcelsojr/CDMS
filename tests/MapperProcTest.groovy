@@ -12,8 +12,9 @@ import com.tinkerpop.gremlin.groovy.Gremlin
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
 
-class MapperProcTest  { //extends GroovyTestCase
-    def db_path = '/Users/luizcelso/db/LMDBsample'
+class MapperProcTest   extends GroovyTestCase{
+    def db_path = '/Users/luizcelso/Dropbox/db/geoinfo-rest'
+    //-l cypher -f /Users/luizcelso/Dropbox/workspace/CDMS/queries/map-cypher-lucene-geoinfo.groovy -d /Users/luizcelso/Dropbox/db/geoinfo-rest
     //def db_path = '/home/lis/luizcelso/workspace/neo4j-sail-test/var/LMDBsample'
     //def db_path = '/lishome-ext/serverdata/linkedimdb/neoLMDB'
     def graph = null
@@ -27,7 +28,7 @@ class MapperProcTest  { //extends GroovyTestCase
         //Gremlin.load()
         MapperProc mp = new MapperProc(this.db_path)
 
-        def queryf = '/Users/luizcelso/workspace/CDMS/queries/map-cypher-lucene-movie-test.groovy'
+        def queryf = '/Users/luizcelso/Dropbox/workspace/CDMS/queries/map-cypher-lucene-geoinfo.groovy'
 
         mp.processQuery(queryf)
 
