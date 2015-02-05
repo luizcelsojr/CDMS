@@ -16,6 +16,7 @@ class ActivatedNetwork {
 
 
     boolean addOrUpdate (Vertex v, Vertex previous, Float potential){
+        println v
         if (this.network.containsKey(v)) {
             this.network[v].potential+=potential
             this.network[v].totalPotential+=potential

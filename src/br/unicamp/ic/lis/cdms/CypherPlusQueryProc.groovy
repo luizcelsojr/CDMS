@@ -3,6 +3,7 @@ package br.unicamp.ic.lis.cdms
 import br.unicamp.ic.lis.cdms.queryproc.Parser
 import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
 import br.unicamp.ic.lis.cdms.sa.SA
+import br.unicamp.ic.lis.cdms.sa.SetSA
 import br.unicamp.ic.lis.cdms.sa.ShortestPathsSA
 import br.unicamp.ic.lis.cdms.sa.TraceableSA
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
@@ -56,14 +57,16 @@ class CypherPlusQueryProc{
 
         this.parsedQuery.ranking.metric.each{
             processRegular()
-            if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
+
+
+            if (it.dest[0]?.@type == null){ //no dest -> set metric
+                this.processSetMetric(it, getOrigs(it))
+            }
+            else if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'node'){ //first param is variable, second is node/id
                 this.processMetric(it, getOrigs(it), getDest(it))
             }
             else if (it.orig[0].@type == 'variable' && it.dest[0].@type == 'map'){ //first param is variable, second is node/id
                 this.processMetric(it, getOrigs(it), getDestMap(it))
-            }
-            else if (it.dest[0].@type == null){ //no dest -> set metric
-                this.processSetMetric(it, getOrigs(it))
             }
 
             else{println "Invalid parameters (" + it + ")"}
@@ -77,7 +80,11 @@ class CypherPlusQueryProc{
         if (this.parsedQuery.@limit) m = m[0..this.parsedQuery.@limit - 1]
 
         m.each{key, value ->
-            def label = this.graph.v(key.id).map().Label? this.graph.v(key.id).map().Label: this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
+            //def label = this.graph.v(key.id).map().Label? this.graph.v(key.id).map().Label: this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
+            def label = "no_label"
+            if (this.graph.v(key.id).map().Label) label = this.graph.v(key.id).map().Label
+            else if (this.graph.v(key.id).map().name) label = this.graph.v(key.id).map().name
+            else if (this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value) label = this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
             println "${key.id}, ${label}, ${value}"
         }
 		
@@ -165,10 +172,12 @@ class CypherPlusQueryProc{
 
 			def R = [:] //results
 			def maxResult = 0.0
+            def minResult = Float.MAX_VALUE
             def result = 0.0
 
             def sa = getSA(context)
 
+            def normWeight = context.@weight/this.totalWeight
 
             println "${context.@type} - ${(origs.size > 10)? origs[0..10].toString() + '...x ' + origs.size: origs}  --> ${dest}"
 
@@ -179,18 +188,31 @@ class CypherPlusQueryProc{
                 sa.registerDests(origs) //added for rrelevance
             }
 
+            def newValue = 0.0
 
-            origs.each{
-                if (inverse) result = sa.inverseProcess(it, dest)
-                else result = sa.process(it, dest)
-                if (result > maxResult) maxResult = result
-                R[it] = result
-            }
-            def normWeight = context.@weight/this.totalWeight
 
-            R.each{ key, value ->
-                this.Results[key] = this.Results[key] + ((value/maxResult) * normWeight)
-            }
+
+                origs.each{
+                    if (inverse) result = sa.inverseProcess(it, dest)
+                    else result = sa.process(it, dest)
+                    if (result > maxResult) maxResult = result
+                    if (result < minResult) minResult = result
+                    R[it] = result
+                }
+
+                R.each{ key, value ->
+                    newValue = newValue = (value/maxResult)
+                    if (context.@desc) newValue = 1 - (newValue - (minResult/maxResult))
+                    this.Results[key] = this.Results[key] + (newValue * normWeight)
+                }
+
+
+
+            //def sign = (context.@desc)? -1: 1 // negative if metric must be inverted
+
+
+
+
 
 
 	}

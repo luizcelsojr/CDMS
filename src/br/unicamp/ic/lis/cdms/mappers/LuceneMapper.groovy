@@ -42,7 +42,7 @@ class LuceneMapper {
         def content
 
         if (!(content = node.content)) //content exists for anonymous (temporary) nodes
-            content = node.outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
+            content = node.desc // node.outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
 
         if (!content) return null
 

@@ -125,6 +125,17 @@
               <artifactId>lucene-analyzers</artifactId>
               <version>3.6.2</version>
           </dependency>
+        <dependency>
+            <groupId>javax.xml</groupId>
+            <artifactId>jsr173</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>stax</groupId>
+            <artifactId>stax</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
     </dependencies>
 	<repositories>
 		<repository>
@@ -150,6 +161,10 @@
             <id>fortytwo</id>
             <name>fortytwo.net Maven repository</name>
             <url>http://fortytwo.net/maven2</url>
+        </repository>
+        <repository>
+            <id>central maven</id>
+            <url>http://central.maven.org/maven2/</url>
         </repository>
 	</repositories>
 
