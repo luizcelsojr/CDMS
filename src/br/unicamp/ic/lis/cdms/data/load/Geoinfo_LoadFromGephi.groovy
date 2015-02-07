@@ -7,7 +7,7 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.neo4j.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
 
 
-dbDir = "/Users/luizcelso/Dropbox/db/geoinfo-rest"
+dbDir = "/Users/luizcelso/Dropbox/db/geoinfo"
 FileUtils.deleteRecursively( new File(dbDir) );
 
 //db = new EmbeddedGraphDatabase(dbdir)

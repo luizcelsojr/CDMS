@@ -48,13 +48,13 @@ class Neo4jDBTest extends GroovyTestCase {
 
         */
 
-        t = opr.scanFilterV({it.id==2})
+        t = opr.scanFilterV({it.id==3})
         println '=>t'
         t.print()
         println 'xxxxxxx'
 
-        t = opr.beta(t, {true}, Constants.BOTH, ['connects', 'knows'], {it.dist = 0})
-
+        t = opr.beta(t, 2, {true}, Constants.OUTBOUND, ['connects', 'knows'], ["it.dist = 0.0f"], ["it.dist = it.dist + e.Weight.toFloat()"], [[aggr:"min", func:"it.dist", as:"minDist"]]) //it.dist = it.dist + e.Weight.toFloat()  // it.dist = (it.dist/c)*e.Weight.toFloat()
+        //t.orderAsc('id')
         t.print()
         println 'xxxxxxx'
 

@@ -14,6 +14,7 @@ import com.tinkerpop.gremlin.groovy.Gremlin
  */
 class OperatorsNeo4j extends Operators{
     Neo4jDB db
+    GroovyShell sh = new GroovyShell()
 
     OperatorsNeo4j(Neo4jDB db){
         this.db = db
@@ -26,35 +27,96 @@ class OperatorsNeo4j extends Operators{
         return t2
     }
 
-    public Table beta (Table t, Closure condition, direction, follow, Closure set){
-        Table t2 = new Table()
+    def set (t, List setFunctions){
+        //setup and execute set functions
+        List setClosures = []
+        for (f in setFunctions) setClosures.add(this.sh.evaluate("{it -> " + f + "}"))
+        for (row in t) setClosures.each{it(row)}
 
-        for (row in t) set(row)
+    }
 
-        def newRow
-        for (row in t){
-/*            db.G().v(row.id).both._.each{
-                newRow = row.clone()
-                newRow.id = it.id
-                t2.addRow(newRow)
-            }
+    Table reduce(Table t, List <Map> reduceFunctions){
+        //aggregation example:
+        // [aggr:"min", func:"it.dist", as:"minDist"]
 
-*/
-            def neighborEdges = []
-            if (direction != Constants.OUTBOUND) neighborEdges.addAll(db.G().v(row.id).inE.filter{(follow)?it.label in follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
-            if (direction != Constants.INBOUND) neighborEdges.addAll(db.G().v(row.id).outE.filter{(follow)?it.label in follow: true}.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
+        Table tOut = new Table()
 
-            for (n in neighborEdges) {
-                newRow = row.clone()
-                newRow.id = n[-1].id
-                t2.addRow(newRow)
-            }
+        if (! t.getSize()) return t
 
-            //if (condition(row)) t2.addRow(row)
+        t.orderAsc('id')
+
+        //setup reduce functions
+        for (f in reduceFunctions) {
+            f.closure = this.sh.evaluate("{it -> " + f.func + "}")
+            f.group = []
         }
-        return union(t, t2)
+
+        def i = 0
+        def cRow = t.getRowAt(0)
+        t.each{
+
+            if ((it.id != cRow.id) ) { //|| (! t.iterator().hasNext())
+                //for (row in t) setClosures.each{it(row)}
+                for (f in reduceFunctions) {
+                    cRow[f.as] = (f.group."${f.aggr}"())
+                    f.group = []
+                }
+                tOut.addRow(cRow)
+                cRow = it
+
+            }
+
+            for (f in reduceFunctions) f.group.add( f.closure(it))
+        }
+
+        //execute for the last row
+        for (f in reduceFunctions)
+            cRow[f.as] = (f.group."${f.aggr}"())
+        tOut.addRow(cRow)
 
 
+        return tOut
+    }
+
+    public Table beta (Table t, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceFunctions){
+        Table t2 = new Table()
+        Table tOut = new Table()
+
+        if (setFunctions) set(t, setFunctions)
+
+        //setup map functions
+        List mapClosures = []
+        for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it, e, c -> " + f + "}"))
+
+        tOut = t.clone()
+        def newRow
+        while (n-- > 0){
+            t2 = new Table()
+            for (row in t){
+                def neighborEdges = []
+                if (direction != Constants.OUTBOUND) neighborEdges.addAll(db.G().v(row.id).inE.filter{(follow)?it.label in follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
+                if (direction != Constants.INBOUND) neighborEdges.addAll(db.G().v(row.id).outE.filter{(follow)?it.label in follow: true}.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
+
+                for (ne in neighborEdges) {
+                    newRow = row.clone()
+                    newRow.id = ne[-1].id
+                    //execute map functions
+                    mapClosures.each{it(newRow,ne[1],neighborEdges.size())}
+
+                    t2.addRow(newRow)
+                }
+
+                //if (condition(row)) t2.addRow(row)
+            }
+
+            t = t2 //.clone()
+
+            tOut = union(tOut, t2)
+
+            if (reduceFunctions) tOut = reduce(tOut, reduceFunctions )
+        }
+
+        return tOut
     }
 
     Table scanFilterV(Closure filter) {

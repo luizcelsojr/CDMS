@@ -12,7 +12,7 @@ import br.unicamp.ic.lis.cdms.source.Table
 abstract class Operators {
     public abstract Table select (Table t, Closure condition)
 
-    public abstract Table beta (Table t, Closure condition, direction, follow, Closure set)
+    public abstract Table beta (Table t, Integer n, Closure condition, direction, follow, List set, List mapFunctions, List reduceFunctions)
 
     public abstract Table scanFilterV(Closure filter)
 
