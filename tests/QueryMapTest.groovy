@@ -6,8 +6,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-import br.unicamp.ic.lis.cdms.CypherPlusQueryProc
-import br.unicamp.ic.lis.cdms.mappers.MapperProc
+import br.unicamp.ic.lis.cdms.queryproc.CypherPlusQueryProc
 
 class QueryMapTest  { //extends GroovyTestCase
     def db_path = '/Users/luizcelso/db/LMDBsample'

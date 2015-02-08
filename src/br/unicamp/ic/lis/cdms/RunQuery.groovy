@@ -1,9 +1,13 @@
 package br.unicamp.ic.lis.cdms
 
 import br.unicamp.ic.lis.cdms.benchmark.Timer
+import br.unicamp.ic.lis.cdms.queryproc.BetaQueryProc
+import br.unicamp.ic.lis.cdms.queryproc.CypherPlusQueryProc
+import br.unicamp.ic.lis.cdms.queryproc.QueryProcessor
 import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.gremlin.groovy.Gremlin
 import groovy.transform.Field
+import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
 
 /*
@@ -55,13 +59,16 @@ def getGraph(){
 
 Gremlin.load()
 
-@Field static neoDB = null
+@Field static GraphDatabaseService neoDB = null
 
 void connectNeoDB(db_path){
     if (!neoDB) {
         neoDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
+
     }
 }
+
+
 
 def runFromCommandLine(args){
 
@@ -115,7 +122,7 @@ def runFromCommandLine(args){
 }
 
 def run(db_path, language, query){
-    def qp
+    QueryProcessor qp
     connectNeoDB(db_path)
 
     switch ( language ) {
@@ -141,7 +148,9 @@ def run(db_path, language, query){
 			break   */
         case "cypher":
             qp = new CypherPlusQueryProc(neoDB)
-            //nc.shutdown();
+            break
+        case "beta":
+            qp = new BetaQueryProc(neoDB)
             break
     }
 

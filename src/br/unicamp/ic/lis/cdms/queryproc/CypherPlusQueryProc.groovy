@@ -1,6 +1,5 @@
-package br.unicamp.ic.lis.cdms
+package br.unicamp.ic.lis.cdms.queryproc
 
-import br.unicamp.ic.lis.cdms.queryproc.CypherPlusParser
 import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
 import br.unicamp.ic.lis.cdms.sa.SA
 import br.unicamp.ic.lis.cdms.sa.SetSA
@@ -8,7 +7,6 @@ import br.unicamp.ic.lis.cdms.sa.ShortestPathsSA
 import br.unicamp.ic.lis.cdms.sa.TraceableSA
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
-import org.neo4j.graphdb.factory.GraphDatabaseFactory
 import com.tinkerpop.blueprints.impls.neo4j.*
 import scala.collection.immutable.Map;
 
@@ -16,21 +14,21 @@ import com.tinkerpop.gremlin.groovy.Gremlin
 
 
 
-class CypherPlusQueryProc{
+class CypherPlusQueryProc extends QueryProcessor{
 
 	def rank, params, regular, rankings, totalWeight
-	def neoGraphDB, graph
+	def graph
 	def regResults //results from regular query
 	def Results = [:].withDefault{0.0} //results from ranking
     def parsedQuery
     def mapper = null
 
 
-	def CypherPlusQueryProc(neoDB){
-		this.neoGraphDB = neoDB
+	def CypherPlusQueryProc(GraphDatabaseService neoDB){
+        super(neoDB)
 		this.graph = new Neo4jGraph(this.neoGraphDB)
 
-		registerShutdownHook( this.neoGraphDB );
+
 		rank = params = regular = ""
 		rankings = [:]
 		totalWeight = 0
@@ -361,20 +359,6 @@ class CypherPlusQueryProc{
 		this.regResults = engine.execute(this.parsedQuery.regular[0].value().trim());
     }
 
-	private static void registerShutdownHook( final GraphDatabaseService graphDb )
-	{
-		// Registers a shutdown hook for the Neo4j instance so that it
-		// shuts down nicely when the VM exits (even if you "Ctrl-C" the
-		// running example before it's completed)
-		Runtime.getRuntime().addShutdownHook( new Thread()
-		{
-			@Override
-			public void run()
-			{
-				graphDb.shutdown();
-			}
-		} );
-	}
 
 } //end class
 

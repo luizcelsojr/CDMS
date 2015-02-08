@@ -20,14 +20,18 @@ class Neo4jDB extends Database {
     def neoGraphDB
     Neo4jGraph graph
 
-    def Neo4jDB(db_path){
-\
+    def Neo4jDB(String db_path){
 
         this.neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
         this.graph = new Neo4jGraph(this.neoGraphDB)
 
         registerShutdownHook( this.neoGraphDB );
         //Gremlin.load()
+    }
+
+    def Neo4jDB(GraphDatabaseService neoDB){
+        this.neoGraphDB = neoDB
+        this.graph = new Neo4jGraph(this.neoGraphDB)
     }
 
     static {
