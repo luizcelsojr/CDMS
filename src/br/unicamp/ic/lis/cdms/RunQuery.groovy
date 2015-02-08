@@ -1,15 +1,10 @@
 package br.unicamp.ic.lis.cdms
 
 import br.unicamp.ic.lis.cdms.benchmark.Timer
-import br.unicamp.ic.lis.cdms.queryproc.Parser
-import com.tinkerpop.blueprints.impls.sail.SailGraph
 import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.gremlin.groovy.Gremlin
-import net.fortytwo.sesametools.reposail.RepositorySail
-import org.openrdf.repository.RepositoryConnection
-
-
-
+import groovy.transform.Field
+import org.neo4j.graphdb.factory.GraphDatabaseFactory
 
 /*
 import virtuoso.sesame2.driver.VirtuosoRepository
@@ -60,7 +55,17 @@ def getGraph(){
 
 Gremlin.load()
 
-def RunQ(args){
+@Field static neoDB = null
+
+void connectNeoDB(db_path){
+    if (!neoDB) {
+        neoDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
+    }
+}
+
+def runFromCommandLine(args){
+
+
     def cli = new CliBuilder(usage: 'RunQuery.groovy -[hlf] [query]')
     // Create the list of options.
     cli.with {
@@ -101,48 +106,52 @@ def RunQ(args){
         query = extraArguments.join(' ')
     }
 
+    def f = new File(file)
 
+    query = f.text
 
+    run(db_path, language, query)
 
+}
+
+def run(db_path, language, query){
     def qp
+    connectNeoDB(db_path)
 
-	switch ( language ) {
+    switch ( language ) {
 /*		case "sparql":
 
 			def VIRTUOSO_INSTANCE = "gaponga";
 			def VIRTUOSO_PORT = 1111;
 			def VIRTUOSO_USERNAME = "dba";
 			def VIRTUOSO_PASSWORD = "dba";
-		
+
 			def repository = new VirtuosoRepository("jdbc:virtuoso://" + VIRTUOSO_INSTANCE + ":" + VIRTUOSO_PORT, VIRTUOSO_USERNAME, VIRTUOSO_PASSWORD);
 			repository.initialize()
-		
+
 			def sail = new RepositorySail(repository, false);
-			
+
 			sc = sail.getConnection()
-			
+
 			rc = repository.getConnection();
 
 			g = new SailGraph(sail)
-			
+
 			qp = new SparqlQueryProc(g, sc, rc)
 			break   */
-		case "cypher":
-			qp = new CypherPlusQueryProc(db_path)
-			//nc.shutdown();
-			break
-	}
-
-    query = file //temporary
+        case "cypher":
+            qp = new CypherPlusQueryProc(neoDB)
+            //nc.shutdown();
+            break
+    }
 
     def time = Timer.closureBenchmark{qp.processQuery(query)}
     println "total time: ${time} --> ${time/1000/60/60}h ${time/1000/60}min"
 
-
 }
 
 
-RunQ(args)
+runFromCommandLine(args)
 
 
 /*

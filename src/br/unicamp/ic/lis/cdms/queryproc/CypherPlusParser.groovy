@@ -7,16 +7,12 @@ package br.unicamp.ic.lis.cdms.queryproc
  * Time: 11:14 AM
  * To change this template use File | Settings | File Templates.
  */
-class Parser {
+class CypherPlusParser {
     def parse(query){ //TODO: query should be the query string, not a script file as it is now
         def queryConfig
         def shell = new GroovyShell()
 
-
-
-        def file = new File(query)
-
-        queryConfig = shell.evaluate(file.text)
+        queryConfig = shell.evaluate(query)
         return queryConfig
     }
 

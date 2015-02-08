@@ -1,6 +1,6 @@
     package br.unicamp.ic.lis.cdms
 
-    import br.unicamp.ic.lis.cdms.queryproc.Parser
+    import br.unicamp.ic.lis.cdms.queryproc.CypherPlusParser
     import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
     import br.unicamp.ic.lis.cdms.sa.SA
     import org.openrdf.query.QueryLanguage
@@ -29,7 +29,7 @@
         }
 
         def parseQuery(query){
-            def parser = new Parser()
+            def parser = new CypherPlusParser()
 
             this.parsedQuery = parser.parse(query)
 

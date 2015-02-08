@@ -1,12 +1,11 @@
 package br.unicamp.ic.lis.cdms
 
-import br.unicamp.ic.lis.cdms.queryproc.Parser
+import br.unicamp.ic.lis.cdms.queryproc.CypherPlusParser
 import br.unicamp.ic.lis.cdms.sa.RandomWalkerSA
 import br.unicamp.ic.lis.cdms.sa.SA
 import br.unicamp.ic.lis.cdms.sa.SetSA
 import br.unicamp.ic.lis.cdms.sa.ShortestPathsSA
 import br.unicamp.ic.lis.cdms.sa.TraceableSA
-import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
@@ -27,8 +26,8 @@ class CypherPlusQueryProc{
     def mapper = null
 
 
-	def CypherPlusQueryProc(db_path){
-		this.neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
+	def CypherPlusQueryProc(neoDB){
+		this.neoGraphDB = neoDB
 		this.graph = new Neo4jGraph(this.neoGraphDB)
 
 		registerShutdownHook( this.neoGraphDB );
@@ -40,7 +39,7 @@ class CypherPlusQueryProc{
 
 	
 	def parseQuery(query){
-        def parser = new Parser()
+        def parser = new CypherPlusParser()
 
         this.parsedQuery = parser.parse(query)
 

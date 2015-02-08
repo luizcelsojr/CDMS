@@ -1,4 +1,4 @@
-import br.unicamp.ic.lis.cdms.queryproc.Parser
+import br.unicamp.ic.lis.cdms.queryproc.CypherPlusParser
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,7 +14,7 @@ class ParserTest extends GroovyTestCase {
 
     void testParser(){
         def queryf = '/Users/luizcelso/workspace/CDMS/queries/query-cypher-rel-symdia_cases_test.groovy'
-        def parser = new Parser()
+        def parser = new CypherPlusParser()
 
         def query = parser.parse(queryf)
 
