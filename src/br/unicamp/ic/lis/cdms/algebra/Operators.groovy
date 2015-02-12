@@ -12,15 +12,16 @@ import br.unicamp.ic.lis.cdms.source.Table
 abstract class Operators {
     public abstract Table select (Table t, Closure condition)
 
-    public abstract Table beta (Table t, Integer n, Closure condition, direction, follow, List set, List mapFunctions, List reduceFunctions)
+    public abstract Table beta (Table t, Integer n, Closure condition, direction, follow, List set, List mapFunctions, List reduceFunctions, List updateFunctions)
 
     public abstract Table scanFilterV(Closure filter)
 
     public abstract Table scanFilterE(Closure filter)
 
     public union (Table t1, Table t2){
-        for (row in t2) t1.addRow(row)
-        return t1
+        Table tOut = t1.copy()
+        for (row in t2) tOut.addRow(row)
+        return tOut
     }
 
 

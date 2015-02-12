@@ -25,7 +25,7 @@ class BetaQueryProc extends QueryProcessor{
     }
 
 
-    def processQuery(query){
+    Table processQuery(query){
 
         def db = new Neo4jDB(this.neoGraphDB)
 
@@ -51,9 +51,13 @@ class BetaQueryProc extends QueryProcessor{
 
 
         //sh.evaluate(query )
+        Table result
+
         Closure queryClosure = sh.evaluate("{opr -> " + query + "}")
 
-        queryClosure(opr)
+        result = queryClosure(opr)
+
+        return result
 
     }
 }

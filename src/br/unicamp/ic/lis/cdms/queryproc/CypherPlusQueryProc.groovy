@@ -5,6 +5,7 @@ import br.unicamp.ic.lis.cdms.sa.SA
 import br.unicamp.ic.lis.cdms.sa.SetSA
 import br.unicamp.ic.lis.cdms.sa.ShortestPathsSA
 import br.unicamp.ic.lis.cdms.sa.TraceableSA
+import br.unicamp.ic.lis.cdms.source.Table
 import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
 import com.tinkerpop.blueprints.impls.neo4j.*
@@ -49,7 +50,7 @@ class CypherPlusQueryProc extends QueryProcessor{
 		println "this.rankings = ${this.parsedQuery.ranking}"
 	}
 
-	def processQuery(query){
+	Table processQuery(query){
 		parseQuery(query)
 
         this.parsedQuery.ranking.metric.each{
@@ -84,6 +85,8 @@ class CypherPlusQueryProc extends QueryProcessor{
             else if (this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value) label = this.graph.v(key.id).outE('http://www.w3.org/2000/01/rdf-schema#label').inV.next().value
             println "${key.id}, ${label}, ${value}"
         }
+
+        return new Table() //temporary -- makes cypher+ compatible with beta
 		
 	}
 

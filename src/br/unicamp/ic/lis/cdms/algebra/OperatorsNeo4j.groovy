@@ -78,21 +78,25 @@ class OperatorsNeo4j extends Operators{
         return tOut
     }
 
-    public Table beta (Table t, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceFunctions){
-        Table t2 = new Table()
-        Table tOut = new Table()
+    public Table beta (Table t, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceFunctions, List updateFunctions){
+        Table tNew
 
-        if (setFunctions) set(t, setFunctions)
+        Table tOut = t.copy()
+
+
+        if (setFunctions) set(tOut, setFunctions)
+
+        Table tLast = tOut.copy()
 
         //setup map functions
         List mapClosures = []
         for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it, e, c -> " + f + "}"))
 
-        tOut = t.clone()
+
         def newRow
         while (n-- > 0){
-            t2 = new Table()
-            for (row in t){
+            tNew = new Table()
+            for (row in tLast){
                 def neighborEdges = []
                 if (direction != Constants.OUTBOUND) neighborEdges.addAll(db.G().v(row.id).inE.filter{(follow)?it.label in follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
                 if (direction != Constants.INBOUND) neighborEdges.addAll(db.G().v(row.id).outE.filter{(follow)?it.label in follow: true}.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
@@ -103,17 +107,19 @@ class OperatorsNeo4j extends Operators{
                     //execute map functions
                     mapClosures.each{it(newRow,ne[1],neighborEdges.size())}
 
-                    t2.addRow(newRow)
+                    tNew.addRow(newRow)
                 }
 
                 //if (condition(row)) t2.addRow(row)
             }
 
-            t = t2 //.clone()
+            if (updateFunctions) set(tOut, updateFunctions)
 
-            tOut = union(tOut, t2)
+            tOut = union(tOut, tNew)
 
             if (reduceFunctions) tOut = reduce(tOut, reduceFunctions )
+
+            tLast = tNew //.copy()
         }
 
         return tOut

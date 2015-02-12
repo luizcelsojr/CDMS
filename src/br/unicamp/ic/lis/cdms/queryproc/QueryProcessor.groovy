@@ -1,5 +1,6 @@
 package br.unicamp.ic.lis.cdms.queryproc
 
+import br.unicamp.ic.lis.cdms.source.Table
 import org.neo4j.graphdb.GraphDatabaseService
 
 /**
@@ -18,7 +19,7 @@ abstract class QueryProcessor
         registerShutdownHook( neoDB )
     }
 
-    public abstract processQuery(query)
+    public abstract Table processQuery(query)
 
     private static void registerShutdownHook( GraphDatabaseService graphDb )
     {

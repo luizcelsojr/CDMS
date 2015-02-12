@@ -17,11 +17,11 @@ class UIConsole {
     def run(){
 
         new SwingBuilder().edt {
-            frame(title:'Frame', size:[1000,800], show: true) {
+            frame(title:'Frame', size:[1500,400], show: true) {
                 borderLayout()
                 textlabel = label(text:"Would you write me a nice query today?", constraints: BL.NORTH)
-                comboLanguage = comboBox(items:['cypher', 'beta'], constraints:BL.NORTH, toolTipText:'Choose the language')
-                text = textPane(text:"test", constraints: BL.CENTER)
+                comboLanguage = comboBox(items:['beta', 'cypher'], constraints:BL.NORTH, toolTipText:'Choose the language')
+                text = textPane(text:new File("/Users/luizcelso/Dropbox/workspace/CDMS2/queries/query-beta-geoinfo-distance.groovy").getText(), constraints: BL.CENTER)
                 button(text:'Fire this badboy...',
                         actionPerformed: {fireQuery("/Users/luizcelso/Dropbox/db/geoinfo", comboLanguage.selectedItem, text.text)},
                         constraints:BL.SOUTH)

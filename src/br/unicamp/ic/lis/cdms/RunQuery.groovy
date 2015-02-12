@@ -4,6 +4,7 @@ import br.unicamp.ic.lis.cdms.benchmark.Timer
 import br.unicamp.ic.lis.cdms.queryproc.BetaQueryProc
 import br.unicamp.ic.lis.cdms.queryproc.CypherPlusQueryProc
 import br.unicamp.ic.lis.cdms.queryproc.QueryProcessor
+import br.unicamp.ic.lis.cdms.source.Table
 import com.tinkerpop.blueprints.impls.tg.*
 import com.tinkerpop.gremlin.groovy.Gremlin
 import groovy.transform.Field
@@ -121,7 +122,7 @@ def runFromCommandLine(args){
 
 }
 
-def run(db_path, language, query){
+Table run(db_path, language, query){
     QueryProcessor qp
     connectNeoDB(db_path)
 
@@ -154,8 +155,12 @@ def run(db_path, language, query){
             break
     }
 
-    def time = Timer.closureBenchmark{qp.processQuery(query)}
+    Table result
+
+    def time = Timer.closureBenchmark{result = qp.processQuery(query)}
     println "total time: ${time} --> ${time/1000/60/60}h ${time/1000/60}min"
+
+    return result
 
 }
 

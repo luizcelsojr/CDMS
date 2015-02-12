@@ -9,9 +9,9 @@ import groovy.transform.AutoClone
  * Time: 8:27 PM
  * To change this template use File | Settings | File Templates.
  */
-@AutoClone
+
 class Table implements Iterable{
-    private contents = []
+    private List contents = []
     Integer size = 0
     //private Integer counter = 0
 
@@ -37,10 +37,39 @@ class Table implements Iterable{
     }
 
     Map getRowAt(Integer index){
-        return this.contents[index]
+        return this.contents[index].clone()
     }
 
+    /*
+    Table clone() {
+        def bos = new ByteArrayOutputStream()
+        def oos = new ObjectOutputStream(bos)
+        oos.writeObject(this); oos.flush()
+        def bin = new ByteArrayInputStream(bos.toByteArray())
+        def ois = new ObjectInputStream(bin)
+        return ois.readObject()
+    }
+    */
 
+    Table copy() {
+        Table clone= new Table();
+
+        this.contents.each{clone.addRow(it)}
+
+        return clone;
+    }
+
+/*
+    protected Object clone() throws CloneNotSupportedException {
+
+        Table clone=(Table)super.clone();
+
+        this.contents.each{clone.addRow(it)}
+
+        return clone;
+
+    }
+*/
 
     @Override
     Iterator iterator() {
@@ -48,5 +77,13 @@ class Table implements Iterable{
         [hasNext: { counter < this.size },
                 next: { counter++;return this.contents[counter -1] }] as Iterator
     }
-
+/*
+    public Table clone() throws CloneNotSupportedException {
+        Table result = new Table()
+        //result.contents = []
+        this.contents.each{result.addRow(it)}
+        //result.size = size
+        return result
+    }
+*/
 }
