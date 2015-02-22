@@ -12,24 +12,58 @@ import groovy.transform.AutoClone
 
 class Table implements Iterable{
     private List contents = []
+    private schema = [] as Set
     Integer size = 0
     //private Integer counter = 0
 
+    Table (Map[] t){
+        for (r in t)
+            this.addRow(r)
+    }
+
+    Table (List schema, t){
+        assert t.size() > 0, "Wooops, can't create table from empty list"
+        for (r in t){
+            assert r.size() == schema.size(), "Woops, row size ($r.size) is different from schema ($schema.size) size"
+            Map newRow = [:]
+            for (i in 0..(schema.size() - 1)) newRow[schema[i]] = r[i]
+
+            this.addRow(newRow)
+        }
+
+    }
+
+    Set getSchema(){return this.schema}
+
     def addRow(Map row){
         this.contents.add(row.clone())
+        for (a in row) this.schema.add(a.key)
         this.size++
     }
 
     def print(){
-        this.contents.each{println it}
+        println "XXXXXXX table XXXXXXXXX"
+        println this.schema
+        this.contents.each{println it.collect{(it.value.class == String)?"'$it.value'":it.value}}
     }
 
     Integer getSize(){
         return this.size
     }
 
+    Table unique(){
+        return new Table( this.contents.unique() as Map[])
+    }
+
     def orderAsc(column) {
         this.contents.sort{a,b -> a."$column" <=> b."$column"}
+    }
+
+    def orderAsc(List attributes) {
+        for (attr in attributes.reverse()){
+            this.contents.sort{a,b -> a."$attr" <=> b."$attr"}
+        }
+
     }
 
     def orderDesc(column) {
@@ -38,6 +72,10 @@ class Table implements Iterable{
 
     Map getRowAt(Integer index){
         return this.contents[index].clone()
+    }
+
+    List getRawContents(){
+        return this.contents
     }
 
     /*
@@ -53,7 +91,7 @@ class Table implements Iterable{
 
     Table copy() {
         Table clone= new Table();
-
+        //TODO: clone of a clone
         this.contents.each{clone.addRow(it)}
 
         return clone;
@@ -75,7 +113,7 @@ class Table implements Iterable{
     Iterator iterator() {
         Integer counter = 0
         [hasNext: { counter < this.size },
-                next: { counter++;return this.contents[counter -1] }] as Iterator
+                next: { counter++;return this.contents[counter -1].clone() }] as Iterator
     }
 /*
     public Table clone() throws CloneNotSupportedException {

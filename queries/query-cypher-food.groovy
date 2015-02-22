@@ -29,7 +29,7 @@ RANK BY 1 WRELEVANCE (n,_117)
         } */
         metric (type: "Relevance", weight: 1, c: 4, weighted: false, direction: Constants.BOTH, shortestpaths: false ){//, fo: { a, d, n -> a * d }, shortestpaths: true , sa:'TraceableSA'
             orig (type: "variable", label: "n")
-            dest(type: "node", id: "4135")
+            dest(type: "node", id: "4134")
         }
 
     }
