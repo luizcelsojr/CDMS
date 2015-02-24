@@ -44,7 +44,7 @@ class Table implements Iterable{
     def print(){
         println "XXXXXXX table XXXXXXXXX"
         println this.schema
-        this.contents.each{println it.collect{(it.value.class == String)?"'$it.value'":it.value}}
+        this.contents.each{println it.collect{(it.value.class == String)?"'$it.value'":(it.value.class == Double)?String.format("%1\$,.2f", it.value):it.value}}
     }
 
     Integer getSize(){

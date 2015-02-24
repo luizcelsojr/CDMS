@@ -23,6 +23,7 @@ class Operators {
 
     Table project (Table t, List columns){
         if (!columns) return t
+        assert t.getSchema().containsAll(columns), "Wooops, table schema does not contain all attributes to project"
         Table tOut = new Table()
         Map newRow
         for (row in t) {
@@ -31,30 +32,6 @@ class Operators {
             tOut.addRow(newRow)
         }
         return tOut
-    }
-
-    Table stepOut(Table V, Table E){
-        Table tOut = new Table()
-
-        E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
-
-        tOut =  tetaJoin(V, E, {it.id_n == it.E_id})
-        tOut = rename(tOut, [["E_id_n", "id_n"]])
-
-        return tOut
-
-    }
-
-    Table stepIn(Table V, Table E){
-        Table tOut = new Table()
-
-        E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
-
-        tOut =  tetaJoin(V, E, {it.id_n == it.E_id_n})
-        tOut = rename(tOut, [["E_id", "id_n"]])
-
-        return tOut
-
     }
 
     Table step(Table V, Table E,  direction){
@@ -127,15 +104,76 @@ class Operators {
             tOut.addRow(row)
         }
         return tOut
+    }
+
+    Table stepOut(Table V, Table E, String newIdName = "id_n"){
+        Table tOut = new Table()
+
+        E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
+
+        tOut =  tetaJoin(V, E, {it.id_n == it.E_id})
+        tOut = rename(tOut, [["E_id_n", newIdName]])
+
+        return tOut
+
+    }
+
+    Table stepIn(Table V, Table E, String newIdName = "id_n"){
+        Table tOut = new Table()
+
+        E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
+
+        tOut =  tetaJoin(V, E, {it.id_n == it.E_id_n})
+        tOut = rename(tOut, [["E_id", newIdName]])
+
+        return tOut
 
     }
 
     Table stepMap(Table V, Table E,  direction, List mapFunctions){
+        //TODO: filter labels (add parameter)
+        assert "id" in V.getSchema(), "First table must have an 'id' column"
+        assert "id" in E.getSchema(), "Second table must have an 'id' column"
+        assert "id_n" in E.getSchema(), "Second table must have an 'id_n' column"
+
+        Table tOut = new Table()
+        Table t = new Table()
+        //V.print()
+
+
+        if (!("id_n" in V.getSchema())) set(V, ["it.id_n = it.id"])
+
+
+        if (direction == Constants.INBOUND) t =  stepIn(V, E, "newId")
+        else if (direction == Constants.OUTBOUND) t =  stepOut(V, E, "newId")
+        else if (direction == Constants.BOTH) t =  union(stepIn(V, E, "newId"), stepOut(V, E, "newId"))
+
+        //t.print()
+
+        List mapClosures = []
+        for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it -> " + f + "}"))
+
+        Table tCount = reduce(t, ["id_n"], [[aggr:"sum", func:"1", as:"c"]])
+        tCount = project(set(tCount, ["it.idCount = it.id_n"]), ["idCount", "c"])
+        //tCount.print()
+
+        t = tetaJoin(t, tCount, {it.id_n == it.idCount})
+        //t.print()
+
+        for (row in t) {
+            mapClosures.each{it(row)}
+            tOut.addRow(row)
+        }
+
+        tOut = rename(tOut, [["newId", "id_n"]])
+        //tOut.print()
+
+        return tOut
 
     }
 
 
-    Table reduce(Table t, List <Map> reduceFunctions){
+    Table reduceDeprecated(Table t, List <Map> reduceFunctions){
         //aggregation example:
         // [aggr:"min", func:"it.dist", as:"minDist"]
 
@@ -202,22 +240,23 @@ class Operators {
 
 
         while (n-- > 0){
-            tNew.print()
-            tNew = step(tLast, e, direction)
-            tNew.print()
-            if (mapFunctions) tNew = map(tNew, mapFunctions) //map
-            tNew.print()
+            //tNew.print()
+            //tNew = step(tLast, e, direction)
+            tNew = stepMap(tLast, e, direction, mapFunctions)
+            //tNew.print()
+            //if (mapFunctions) tNew = map(tNew, mapFunctions) //map
+            //tNew.print()
 
             if (updateFunctions) tOut = set(tOut, updateFunctions)
-            tOut.print()
+            //tOut.print()
 
-            //if (reduceFunctions) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
+            if (reduceFunctions) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
 
             tOut = union(tOut, tNew)
-            tOut.print()
+            //tOut.print()
 
             if (reduceFunctions) tOut = reduce(tOut, reduceGroupBy, reduceFunctions )
-            tOut.print()
+            //tOut.print()
 
             tLast = tNew.copy()//tOut.copy()
         }
@@ -284,6 +323,18 @@ class Operators {
                 row.remove(r[0])
             }
             tOut.addRow(row)
+        }
+        return tOut
+    }
+
+    public Table renameAll(Table t, String prefix){
+        Table tOut = new Table()
+        Map newRow
+        for (row in t) {
+            newRow = [:]
+            for (a in row)
+                newRow[prefix + "_" + a.key] = a.value
+            tOut.addRow(newRow)
         }
         return tOut
     }

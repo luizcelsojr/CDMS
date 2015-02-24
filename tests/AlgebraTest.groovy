@@ -10,6 +10,7 @@
 import br.unicamp.ic.lis.cdms.algebra.Operators
 import br.unicamp.ic.lis.cdms.source.Neo4jDB
 import br.unicamp.ic.lis.cdms.source.Table
+import br.unicamp.ic.lis.cdms.util.AdvancedEditDistance
 import br.unicamp.ic.lis.cdms.util.Constants
 
 class AlgebraTest extends GroovyTestCase {
@@ -22,183 +23,50 @@ class AlgebraTest extends GroovyTestCase {
 
     }
 
+    List [] eConnData = [
+            [1, 3, 'connects', '0.2'],
+            [3, 1, 'connects', '0.2'],
+            [3, 6, 'connects', '0.3'],
+            [4, 3, 'connects', '0.3'],
+            [6, 3, 'connects', '0.3'],
+            [6, 5, 'connects', '0.2'],
+            [6, 7, 'connects', '0.3'],
+            [7, 6, 'connects', '0.3'],
+            [7, 9, 'connects', '0.4'],
+            [8, 2, 'connects', '0.5'],
+            [8, 6, 'connects', '0.3'],
+            [8, 11, 'connects', '0.4'],
+            [8, 12, 'connects', '0.1'],
+            [9, 8, 'connects', '0.4'],
+            [9, 13, 'connects', '0.2'],
+            [10, 8, 'connects', '0.2'],
+            [11, 2, 'connects', '0.1'],
+            [12, 6, 'connects', '0.2'],
+            [13, 8, 'connects', '0.2']]
 
-    void testAlgebra(){
-        Map [] data = [[id:2, a:0, b:1], [id:1, a:5, b:2], [id:1, a:0, b:3]]
-        Map [] data2 = [[id:2, idn:10, a:0, b:1], [id:1, idn:15, a:5, b:2], [id:1, idn:15, a:7, b:2], [id:1, idn:15, a:0, b:4], [id:1, idn:10, a:0, b:3]]
+    List [] eKnowsData = [
+            [14, 17, 'knows'],
+            [14, 19, 'knows'],
+            [14, 21, 'knows'],
+            [15, 16, 'knows'],
+            [15, 17, 'knows'],
+            [15, 20, 'knows'],
+            [15, 21, 'knows'],
+            [16, 22, 'knows'],
+            [17, 18, 'knows'],
+            [18, 20, 'knows'],
+            [18, 22, 'knows'],
+            [19, 20, 'knows'],
+            [19, 21, 'knows']
+    ]
 
-        Table t = new Table(data)
+    List [] eKnowsDataSmall = [
+            [14, 17, 'knows'],
+            [15, 16, 'knows'],
+            [15, 17, 'knows']
+    ]
 
-
-
-
-        //Test order by
-
-        t.orderAsc(["id", "a", "b"])
-        //t.print()
-        //println 'xxxxxxx'
-
-        assertEquals(t.getRawContents(), [[id:1, a:0, b:3], [id:1, a:5, b:2], [id:2, a:0, b:1]])
-
-        //test reduce
-
-        t = new Table(data2)
-
-        t.orderAsc(["id", "idn", "b"])
-        //t.print()
-        //println 'xxxxxxx'
-
-        t = basicOpr.reduce(t, ["id", "idn", "b"], [[aggr:"sum", func:"it.a", as:"sum"]])
-        assertEquals(t.getRawContents(), [[id:1, idn:10, a:0, b:3, sum:0], [id:1, idn:15, a:5, b:2, sum:12], [id:1, idn:15, a:0, b:4, sum:0], [id:2, idn:10, a:0, b:1, sum:0]])
-
-        //t.print()
-        //println 'xxxxxxx'
-
-        t = basicOpr.project(t, ["id", "idn", "b"])
-        assertEquals(t.getRawContents(), [[id:1, idn:10, b:3], [id:1, idn:15, b:2], [id:1, idn:15, b:4], [id:2, idn:10, b:1]])
-
-        List [] eConnData = [
-                [1, 3, 'connects', '0.2'],
-                [3, 1, 'connects', '0.2'],
-                [3, 6, 'connects', '0.3'],
-                [4, 3, 'connects', '0.3'],
-                [6, 3, 'connects', '0.3'],
-                [6, 5, 'connects', '0.2'],
-                [6, 7, 'connects', '0.3'],
-                [7, 6, 'connects', '0.3'],
-                [7, 9, 'connects', '0.4'],
-                [8, 2, 'connects', '0.5'],
-                [8, 6, 'connects', '0.3'],
-                [8, 11, 'connects', '0.4'],
-                [8, 12, 'connects', '0.1'],
-                [9, 8, 'connects', '0.4'],
-                [9, 13, 'connects', '0.2'],
-                [10, 8, 'connects', '0.2'],
-                [11, 2, 'connects', '0.1'],
-                [12, 6, 'connects', '0.2'],
-                [13, 8, 'connects', '0.2']]
-
-        List [] eKnowsData = [
-                [14, 17, 'knows'],
-                [14, 19, 'knows'],
-                [14, 21, 'knows'],
-                [15, 16, 'knows'],
-                [15, 17, 'knows'],
-                [15, 20, 'knows'],
-                [15, 21, 'knows'],
-                [16, 22, 'knows'],
-                [17, 18, 'knows'],
-                [18, 20, 'knows'],
-                [18, 22, 'knows'],
-                [19, 20, 'knows'],
-                [19, 21, 'knows']
-        ]
-
-        List [] eKnowsDataSmall = [
-                [14, 17, 'knows'],
-                [15, 16, 'knows'],
-                [15, 17, 'knows']
-        ]
-
-        List [] vPersonDataSmall = [
-                [14, 'Andre', 'person'],
-                [15, 'Ive', 'person'],
-                [16, 'Celso', 'person'],
-                [17, 'Bruno', 'person']
-        ]
-
-        List [] rConnData = [
-                [3, 'I3', 'road']
-        ]
-
-
-        Table eConn = new Table(['id', 'id_n', 'label', 'Weight'],eConnData)
-
-        Table eKnows = new Table(['id', 'id_n', 'label'],eKnowsData)
-
-        Table rConn = new Table(['id', 'Label', 'type'], rConnData)
-
-        Table vPersonSmall= new Table(['id', 'Label', 'type'],vPersonDataSmall)
-
-        Table eKnowsSmall = new Table(['id', 'id_n', 'label'],eKnowsDataSmall)
-
-
-
-        //eConn.print()
-        //rConn.print()
-        /*
-        //Test step
-        t = basicOpr.step(basicOpr.set(new Table(['id', 'Label', 'type'], vPersonDataSmall[1..2] ), ["it.id_n = it.id"]),
-                          eKnowsSmall, Constants.BOTH)
-        t.orderAsc(["id", "id_n"])
-        assertEquals(t.getRowAt(1).id_n, 17)
-        t = basicOpr.step(t, eKnowsSmall, Constants.BOTH)
-        t.orderAsc(["id", "id_n"])
-        assertEquals(t.getRowAt(1).id_n, 15)
-
-
-        //Test beta (distance) and select
-
-        rConn = basicOpr.beta(rConn, eConn, 4, {true}, Constants.BOTH, ['connects'], ["it.dist = 0.0f"], ["it.dist = it.dist + it.Weight.toFloat()"], ["id", "id_n"], [[aggr:"min", func:"it.dist", as:"minDist"], [aggr:"max", func:"it.dist", as:"maxDist"]], [])
-        rConn = basicOpr.select(rConn, {it.id_n == 7})
-
-        assertEquals(0.6, rConn.getRowAt(0).minDist, 0.001)
-        assertEquals(1.4, rConn.getRowAt(0).maxDist, 0.001)
-
-
-       vPersonSmall.print()
-       eKnowsSmall.print()
-       t = basicOpr.step(vPersonSmall, eKnowsSmall, Constants.BOTH)
-       t.orderAsc(["id", "id_n"])
-       t.print()
-        */
-
-        t = basicOpr.beta(vPersonSmall, eKnowsSmall, 2, {true}, Constants.BOTH, ['knows'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], ["it.rank = 0.0f"])
-        t.print()
-
-
-
-    }
-
-    void testTable(){
-        List [] eConnData = [
-                [1, 3, 'connects', '0.2'],
-                [3, 1, 'connects', '0.2'],
-                [3, 6, 'connects', '0.3'],
-                [4, 3, 'connects', '0.3'],
-                [6, 3, 'connects', '0.3'],
-                [6, 5, 'connects', '0.2'],
-                [6, 7, 'connects', '0.3'],
-                [7, 6, 'connects', '0.3'],
-                [7, 9, 'connects', '0.4'],
-                [8, 2, 'connects', '0.5'],
-                [8, 6, 'connects', '0.3'],
-                [8, 11, 'connects', '0.4'],
-                [8, 12, 'connects', '0.1'],
-                [9, 8, 'connects', '0.4'],
-                [9, 13, 'connects', '0.2'],
-                [10, 8, 'connects', '0.2'],
-                [11, 2, 'connects', '0.1'],
-                [12, 6, 'connects', '0.2'],
-                [13, 8, 'connects', '0.2']]
-
-        List [] eKnowsData = [
-                [14, 17, 'knows'],
-                [14, 19, 'knows'],
-                [14, 21, 'knows'],
-                [15, 16, 'knows'],
-                [15, 17, 'knows'],
-                [15, 20, 'knows'],
-                [15, 21, 'knows'],
-                [16, 22, 'knows'],
-                [17, 18, 'knows'],
-                [18, 20, 'knows'],
-                [18, 22, 'knows'],
-                [19, 20, 'knows'],
-                [19, 21, 'knows']
-        ]
-
-        List [] vPersonData = [
+    List [] vPersonData = [
             [14, 'Andre', 'person'],
             [15, 'Ive', 'person'],
             [16, 'Celso', 'person'],
@@ -208,48 +76,122 @@ class AlgebraTest extends GroovyTestCase {
             [20, 'Jacque', 'person'],
             [21, 'Matheus', 'person'],
             [22, 'Jordi', 'person']
-          ]
-
-        List [] rConnData = [
-                [3, 'I3', 'road']
-            ]
+    ]
 
 
-        Table eConn = new Table(['id', 'id_n', 'label', 'Weight'],eConnData)
+    List [] vPersonDataSmall = [
+            [14, 'Andre', 'person'],
+            [15, 'Ive', 'person'],
+            [16, 'Celso', 'person'],
+            [17, 'Bruno', 'person']
+    ]
 
-        Table vPerson= new Table(['id', 'Label', 'type'],vPersonData)
+    List [] rConnData = [
+            [3, 'I3', 'road'],
+            [4, 'I4', 'road']
+    ]
+
+    Table eConn = new Table(['id', 'id_n', 'label', 'Weight'],eConnData)
+
+    Table eKnows = new Table(['id', 'id_n', 'label'],eKnowsData)
+
+    Table rConn = new Table(['id', 'Label', 'type'], rConnData)
+
+    Table vPersonSmall= new Table(['id', 'Label', 'type'],vPersonDataSmall)
+
+    Table eKnowsSmall = new Table(['id', 'id_n', 'label'],eKnowsDataSmall)
+
+    Table vPerson= new Table(['id', 'Label', 'type'],vPersonData)
 
 
+    void dont_testAlgebra(){
+        Map [] data = [[id:2, a:0, b:1], [id:1, a:5, b:2], [id:1, a:0, b:3]]
+        Map [] data2 = [[id:2, idn:10, a:0, b:1], [id:1, idn:15, a:5, b:2], [id:1, idn:15, a:7, b:2], [id:1, idn:15, a:0, b:4], [id:1, idn:10, a:0, b:3]]
 
-        Table rConn = new Table(['id', 'Label', 'type'], rConnData)
+        Table t = new Table(data)
 
-        Table eKnows = new Table(['id', 'id_n', 'label'],eKnowsData)
+        //Test order by
+        t.orderAsc(["id", "a", "b"])
+        assertEquals(t.getRawContents(), [[id:1, a:0, b:3], [id:1, a:5, b:2], [id:2, a:0, b:1]])
 
+        //test reduce
+        t = new Table(data2)
+        t.orderAsc(["id", "idn", "b"])
+        t = basicOpr.reduce(t, ["id", "idn", "b"], [[aggr:"sum", func:"it.a", as:"sum"]])
+        assertEquals(t.getRawContents(), [[id:1, idn:10, a:0, b:3, sum:0], [id:1, idn:15, a:5, b:2, sum:12], [id:1, idn:15, a:0, b:4, sum:0], [id:2, idn:10, a:0, b:1, sum:0]])
+
+        //Test project
+        t = basicOpr.project(t, ["id", "idn", "b"])
+        assertEquals(t.getRawContents(), [[id:1, idn:10, b:3], [id:1, idn:15, b:2], [id:1, idn:15, b:4], [id:2, idn:10, b:1]])
+
+        //Test step
+        t = basicOpr.step(basicOpr.set(new Table(['id', 'Label', 'type'], vPersonDataSmall[1..2] ), ["it.id_n = it.id"]),
+                          eKnowsSmall, Constants.BOTH)
+        t.orderAsc(["id", "id_n"])
+        assertEquals(t.getRowAt(1).id_n, 17)
+        t = basicOpr.step(t, eKnowsSmall, Constants.BOTH)
+        t.orderAsc(["id", "id_n"])
+        assertEquals(t.getRowAt(1).id_n, 15)
+
+        //Test beta (distance) and select
+
+        rConn = basicOpr.beta(rConn, eConn, 4, {true}, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.Weight.toFloat()", "it.maxDist = it.maxDist + it.Weight.toFloat()"], ["id_n", "id"], [[aggr:"min", func:"it.minDist", as:"minDist"], [aggr:"max", func:"it.maxDist", as:"maxDist"]], [])
+        rConn.orderAsc(["id", "id_n"])
+        rConn = basicOpr.project(rConn, ["id", "id_n", "minDist", "maxDist"])
+        assertEquals(0.6, rConn.getRowAt(6).minDist, 0.001) //rConn = basicOpr.select(rConn, {it.id == 3 && it.id_n == 7})
+        assertEquals(1.4, rConn.getRowAt(6).maxDist, 0.001)
+        assertEquals(0.6, rConn.getRowAt(18).minDist, 0.001) //rConn = basicOpr.select(rConn, {it.id == 4 && it.id_n == 6})
+        assertEquals(1.2, rConn.getRowAt(18).maxDist, 0.001)
+
+        //Test beta (pagerank)
+
+        t = basicOpr.beta(vPerson, eKnows, 3, {true}, Constants.BOTH, ['knows'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], ["it.rank = 0.0f"])
+        t.orderAsc('rank')
+        assertEquals(70.49, t.getRowAt(0).rank, 0.1)
+        assertEquals(98.03, t.getRowAt(3).rank, 0.1)
+
+        //Test raname
+        t = basicOpr.renameAll(vPerson, "new")
+        assertEquals(15, t.getRowAt(1).new_id)
+
+    }
+
+    void testTable(){
+
+
+        /*
         Table eKnows2 = basicOpr.set(eKnows, ["it.aux = it.id", "it.id = it.id_n", "it.id_n = it.aux"])
         eKnows2 = basicOpr.project(eKnows2, ["id", "id_n", "label"])
-        eKnows = basicOpr.union(eKnows, eKnows2)
-        eKnows.orderAsc(["id", "id_n"])
+        eKnows2 = basicOpr.union(eKnows, eKnows2)
+        eKnows2.orderAsc(["id", "id_n"])
 
-        Table celsoKnows = new Table(['id'], [[16]])
-        Table ePersonKnows = basicOpr.set(vPerson, ["it.id_n = it.id"])
 
-        //eKnows.print()
-        /*
-        Table eCoKnows = basicOpr.step(ePersonKnows, eKnows, Constants.BOTH)
-        eCoKnows = basicOpr.step(eCoKnows, eKnows, Constants.BOTH)
+        Table eCoKnows = basicOpr.step(vPerson, eKnows2, Constants.BOTH)
+        eCoKnows = basicOpr.step(eCoKnows, eKnows2, Constants.BOTH)
+        eCoKnows = basicOpr.project(eCoKnows, ["id", "Label", "type", "id_n", "label"])
         eCoKnows = basicOpr.select(eCoKnows, {it.id != it.id_n})
         eCoKnows = basicOpr.set(eCoKnows, ["it.label = 'fof'"])
         eCoKnows = basicOpr.unique(eCoKnows)
-        //eCoKnows = basicOpr.tetaJoin(eCoKnows, basicOpr.set(vPerson, ["it.idPerson = it.id", "it.labelPerson = it.Label"]), {it.id_n == it.idPerson})
-        //eCoKnows.print()
-        */
-        //vPerson.print()
-        //eKnows.print()
 
-        //Table eCoKnows = basicOpr.beta(vPerson, eKnows, 3, {true}, Constants.BOTH, ['knows'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], ["it.rank = 0.0f"])
+        Table vPerson2 = basicOpr.set(vPerson, ["it.idPerson = it.id", "it.labelPerson = it.Label"])
+        vPerson2 = basicOpr.project(vPerson2, ["idPerson", "labelPerson"])
+        vPerson2.print()
+
+        eCoKnows.print()
+        eCoKnows = basicOpr.tetaJoin(eCoKnows, vPerson2, {it.id_n == it.idPerson})
+        eCoKnows.print()
+        eCoKnows = basicOpr.rename(eCoKnows, [["idPerson", "id_n"]])
+        eCoKnows.print()
+        eCoKnows = basicOpr.project(eCoKnows, ["id", "Label", "label", "id_n", "labelPerson"])
+        eCoKnows.print()
+
+        Table t = basicOpr.beta(vPerson, eCoKnows, 3, {true}, Constants.BOTH, ['fof'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], ["it.rank = 0.0f"])
+        t.orderAsc('rank')
+        t.print()  */
+
+        AdvancedEditDistance.prettyPrint(AdvancedEditDistance.computeEditDistance("East-African", "African", ["Copy": 5, "Replace": 5, "Delete": 1, "Insert": 1, "Twiddle": 0, "Kill": 10]))
 
 
-        //eCoKnows.print()
 
     }
 }
