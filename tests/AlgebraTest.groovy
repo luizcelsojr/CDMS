@@ -8,9 +8,7 @@
 
 
 import br.unicamp.ic.lis.cdms.algebra.Operators
-import br.unicamp.ic.lis.cdms.source.Neo4jDB
 import br.unicamp.ic.lis.cdms.source.Table
-import br.unicamp.ic.lis.cdms.util.AdvancedEditDistance
 import br.unicamp.ic.lis.cdms.util.Constants
 
 class AlgebraTest extends GroovyTestCase {
@@ -86,16 +84,34 @@ class AlgebraTest extends GroovyTestCase {
             [17, 'Bruno', 'person']
     ]
 
-    List [] rConnData = [
+    List [] rConnDataSmall = [
             [3, 'I3', 'road'],
             [4, 'I4', 'road']
+    ]
+
+    List [] rConnData = [
+            [1, 'null', 'I1', 'road'],
+            [2, 'null', 'I2', 'road'],
+            [3, 'null', 'I3', 'road'],
+            [4, 'null', 'I4', 'road'],
+            [5, 'null', 'I5', 'road'],
+            [6, 'null', 'I6', 'road'],
+            [7, 'null', 'I7', 'road'],
+            [8, 'null', 'I8', 'road'],
+            [9, 'null', 'I9', 'road'],
+            [10, 'null', 'I10', 'road'],
+            [11, 'Home-style cooking comfort food hand-made family friendly', 'Mamas', 'rest'],
+            [12, 'Rotisserie and grill chicken dishes whole food family environment', 'Erreu', 'rest'],
+            [13, 'Fastfood sandwiches soft drinks', 'FlashFast', 'rest']
     ]
 
     Table eConn = new Table(['id', 'id_n', 'label', 'Weight'],eConnData)
 
     Table eKnows = new Table(['id', 'id_n', 'label'],eKnowsData)
 
-    Table rConn = new Table(['id', 'Label', 'type'], rConnData)
+    Table rConnSmall = new Table(['id', 'Label', 'type'], rConnDataSmall)
+
+    Table rConn = new Table(['id', "desc", 'Label', 'type'], rConnData)
 
     Table vPersonSmall= new Table(['id', 'Label', 'type'],vPersonDataSmall)
 
@@ -104,7 +120,7 @@ class AlgebraTest extends GroovyTestCase {
     Table vPerson= new Table(['id', 'Label', 'type'],vPersonData)
 
 
-    void dont_testAlgebra(){
+    void testAlgebra(){
         Map [] data = [[id:2, a:0, b:1], [id:1, a:5, b:2], [id:1, a:0, b:3]]
         Map [] data2 = [[id:2, idn:10, a:0, b:1], [id:1, idn:15, a:5, b:2], [id:1, idn:15, a:7, b:2], [id:1, idn:15, a:0, b:4], [id:1, idn:10, a:0, b:3]]
 
@@ -135,13 +151,13 @@ class AlgebraTest extends GroovyTestCase {
 
         //Test beta (distance) and select
 
-        rConn = basicOpr.beta(rConn, eConn, 4, {true}, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.Weight.toFloat()", "it.maxDist = it.maxDist + it.Weight.toFloat()"], ["id_n", "id"], [[aggr:"min", func:"it.minDist", as:"minDist"], [aggr:"max", func:"it.maxDist", as:"maxDist"]], [])
-        rConn.orderAsc(["id", "id_n"])
-        rConn = basicOpr.project(rConn, ["id", "id_n", "minDist", "maxDist"])
-        assertEquals(0.6, rConn.getRowAt(6).minDist, 0.001) //rConn = basicOpr.select(rConn, {it.id == 3 && it.id_n == 7})
-        assertEquals(1.4, rConn.getRowAt(6).maxDist, 0.001)
-        assertEquals(0.6, rConn.getRowAt(18).minDist, 0.001) //rConn = basicOpr.select(rConn, {it.id == 4 && it.id_n == 6})
-        assertEquals(1.2, rConn.getRowAt(18).maxDist, 0.001)
+        rConnSmall = basicOpr.beta(rConnSmall, eConn, 4, {true}, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.Weight.toFloat()", "it.maxDist = it.maxDist + it.Weight.toFloat()"], ["id_n", "id"], [[aggr:"min", func:"it.minDist", as:"minDist"], [aggr:"max", func:"it.maxDist", as:"maxDist"]], [])
+        rConnSmall.orderAsc(["id", "id_n"])
+        rConnSmall = basicOpr.project(rConnSmall, ["id", "id_n", "minDist", "maxDist"])
+        assertEquals(0.6, rConnSmall.getRowAt(6).minDist, 0.001) //rConnSmall = basicOpr.select(rConnSmall, {it.id == 3 && it.id_n == 7})
+        assertEquals(1.4, rConnSmall.getRowAt(6).maxDist, 0.001)
+        assertEquals(0.6, rConnSmall.getRowAt(18).minDist, 0.001) //rConnSmall = basicOpr.select(rConnSmall, {it.id == 4 && it.id_n == 6})
+        assertEquals(1.2, rConnSmall.getRowAt(18).maxDist, 0.001)
 
         //Test beta (pagerank)
 
@@ -189,7 +205,22 @@ class AlgebraTest extends GroovyTestCase {
         t.orderAsc('rank')
         t.print()  */
 
-        AdvancedEditDistance.prettyPrint(AdvancedEditDistance.computeEditDistance("East-African", "African", ["Copy": 5, "Replace": 5, "Delete": 1, "Insert": 1, "Twiddle": 0, "Kill": 10]))
+        //AdvancedEditDistance.prettyPrint(AdvancedEditDistance.computeEditDistance("Japan", "China", ["Copy": 0, "Replace": 2, "Delete": 1, "Insert": 1, "Twiddle": 2, "Kill": 1]))
+
+
+        Table dist = basicOpr.beta(rConn, eConn, 4, {true}, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.Weight.toFloat()", "it.maxDist = it.maxDist + it.Weight.toFloat()"], ["id_n", "id"], [[aggr:"min", func:"it.minDist", as:"minDist"], [aggr:"max", func:"it.maxDist", as:"maxDist"]], [])
+        //dist.orderAsc(["id", "id_n"])
+        dist = basicOpr.project(dist, ["id", "id_n", "minDist", "maxDist"])
+
+        Table distPerPoint = basicOpr.reduce(dist, ["id_n"], [[aggr:"sum", func:"it.minDist", as:"sum"], [aggr:"size", func:"", as:"size"]])
+        distPerPoint = basicOpr.set(distPerPoint, ["it.average = it.sum/it.size"])
+        distPerPoint = basicOpr.project(distPerPoint, ["id_n", "average"])
+        distPerPoint.print()
+
+
+        Table distTotal  = basicOpr.reduce(dist, [""], [[aggr:"sum", func:"it.minDist", as:"sum"], [aggr:"size", func:"", as:"size"]])
+        distTotal = basicOpr.set(distTotal, ["it.average = it.sum/it.size"])
+        distTotal.print()
 
 
 

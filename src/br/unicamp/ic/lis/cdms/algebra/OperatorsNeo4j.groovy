@@ -81,29 +81,50 @@ class OperatorsNeo4j extends Operators{
         return tOut
     }
 
-    Table scanFilterV(Closure filter) {
+    Table scanFilterV(Closure filter, Integer limit = 0) {
         def V = new Table()
 
-        db.G().V().filter(filter)_.each{
-            Map newV = it.map()
-            newV['id'] = it.id
-            V.addRow(newV)
+        if (limit > 0) {
+            db.G().V().filter(filter)_[0..limit].each{
+                Map newV = it.map()
+                newV['id'] = it.id
+                V.addRow(newV)
+            }
+        } else{
+            db.G().V().filter(filter)_.each{
+                Map newV = it.map()
+                newV['id'] = it.id
+                V.addRow(newV)
+            }
 
         }
+
+
         return V
 
     }
 
-    Table scanFilterE(Closure filter) {
+    Table scanFilterE(Closure filter, Integer limit = 0) {
         def E = new Table()
 
-        db.G().E().filter(filter)_.each{
-            Map newE = it.map()
-            //TODO: lowercase everything
-            newE['id'] = it.outV.id.next()
-            newE['id_n'] = it.inV.id.next()
-            newE['label'] = it.label
-            E.addRow(newE)
+        if (limit > 0) {
+            db.G().E().filter(filter)_[0..limit].each{
+                Map newE = it.map()
+                //TODO: lowercase everything
+                newE['id'] = it.outV.id.next()
+                newE['id_n'] = it.inV.id.next()
+                newE['label'] = it.label
+                E.addRow(newE)
+            }
+        } else{
+            db.G().E().filter(filter)_.each{
+                Map newE = it.map()
+                //TODO: lowercase everything
+                newE['id'] = it.outV.id.next()
+                newE['id_n'] = it.inV.id.next()
+                newE['label'] = it.label
+                E.addRow(newE)
+            }
         }
 
         return E

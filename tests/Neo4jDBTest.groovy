@@ -66,17 +66,8 @@ class Neo4jDBTest extends GroovyTestCase {
 
 
         Table t
-        t = opr.scanFilterV({it.type == 'person'})
-        Table t2
-        t2 = opr.beta(t, 3, {true}, Constants.BOTH, ['knows'], ["it.rank = 100.0f"], ["it.rank = it.rank/c"], [[aggr:"sum", func:"it.rank", as:"rank"]], ["it.rank = 0.0f"])
-        t2.orderAsc('rank')
+        t = opr.scanFilterV({it.type == 'road' || it.type == 'rest'})
 
-        t2.print()
-
-        t = opr.scanFilterV({it.id==3 || it.id==4})
-        t = opr.beta(t, 3, {true}, Constants.OUTBOUND, ['connects'], ["it.dist = 0.0f"], ["it.dist = it.dist + e.Weight.toFloat()"], ["id", "id_n"], [[aggr:"min", func:"it.dist", as:"minDist"], [aggr:"max", func:"it.dist", as:"maxDist"]], [])
-        //t = opr.project(t, ["id", "id_n", "dist", "minDist", "maxDist", "type_n"])
-        t.orderAsc('id')
         t.print()
 
 

@@ -41,11 +41,21 @@ class Table implements Iterable{
         this.size++
     }
 
+    def print_old(){
+        println "XXXXXXX table XXXXXXXXX"
+        println this.schema
+        this.contents.each{println it.collect{(!it.value)?"<null>":(it.value.class == String)?"'$it.value'":(it.value.class == Double)?String.format("%1\$,.2f", it.value):it.value}}
+    }
+
     def print(){
         println "XXXXXXX table XXXXXXXXX"
         println this.schema
-        this.contents.each{println it.collect{(it.value.class == String)?"'$it.value'":(it.value.class == Double)?String.format("%1\$,.2f", it.value):it.value}}
+
+        for (row in this.contents){
+            println this.schema.collect{(!row[it])?"<null>":(row[it].class == String)?"'" + row[it] + "'":(row[it].class == Double)?String.format("%1\$,.2f", row[it]):row[it]}
+        }
     }
+
 
     Integer getSize(){
         return this.size

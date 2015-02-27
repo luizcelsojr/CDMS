@@ -237,7 +237,7 @@ class Operators {
         //setup map functions
         //List mapClosures = []
         //for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it, e, c -> " + f + "}"))
-
+         tOut = new Table() //TODO: is this okay???
 
         while (n-- > 0){
             //tNew.print()
@@ -346,6 +346,23 @@ class Operators {
                 Map newRow = rA.plus(rB)
                 if (condition(newRow)) tOut.addRow(newRow)
             }
+        return tOut
+    }
+
+    public Table tetaLeftJoin(Table A, Table B, Closure condition){
+        Table tOut = new Table()
+        for (rA in A){
+            def added = false
+            for (rB in B){
+                Map newRow = rA.plus(rB)
+                if (condition(newRow)) {
+                    tOut.addRow(newRow)
+                    added = true
+                }
+
+            }
+            if (!added) tOut.addRow(rA)
+        }
         return tOut
     }
 
