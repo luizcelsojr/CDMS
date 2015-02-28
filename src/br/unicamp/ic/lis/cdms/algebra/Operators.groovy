@@ -49,9 +49,9 @@ class Operators {
 
 
 
-        if (direction == Constants.INBOUND) tOut =  stepIn(vIn, E)
+        if (direction == Constants.INBOUND) tOut =  stepIn(vIn, E, [])
         else if (direction == Constants.OUTBOUND) tOut =  stepOut(vIn, E)
-        else if (direction == Constants.BOTH) tOut =  union(stepIn(vIn, E), stepOut(vIn, E))
+        else if (direction == Constants.BOTH) tOut =  union(stepIn(vIn, E, []), stepOut(vIn, E))
 
 
 /*        for (v in V){
@@ -118,7 +118,7 @@ class Operators {
 
     }
 
-    Table stepIn(Table V, Table E, String newIdName = "id_n"){
+    Table stepIn(Table V, Table E, def follow = [], String newIdName = "id_n"){
         Table tOut = new Table()
 
         E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
@@ -130,7 +130,7 @@ class Operators {
 
     }
 
-    Table stepMap(Table V, Table E,  direction, List mapFunctions){
+    Table stepMap(Table V, Table E, Object direction, def follow = [], List mapFunctions){
         //TODO: filter labels (add parameter)
         assert "id" in V.getSchema(), "First table must have an 'id' column"
         assert "id" in E.getSchema(), "Second table must have an 'id' column"
@@ -144,9 +144,9 @@ class Operators {
         if (!("id_n" in V.getSchema())) set(V, ["it.id_n = it.id"])
 
 
-        if (direction == Constants.INBOUND) t =  stepIn(V, E, "newId")
+        if (direction == Constants.INBOUND) t =  stepIn(V, E, [], "newId")
         else if (direction == Constants.OUTBOUND) t =  stepOut(V, E, "newId")
-        else if (direction == Constants.BOTH) t =  union(stepIn(V, E, "newId"), stepOut(V, E, "newId"))
+        else if (direction == Constants.BOTH) t =  union(stepIn(V, E, [], "newId"), stepOut(V, E, "newId"))
 
         //t.print()
 
@@ -237,12 +237,12 @@ class Operators {
         //setup map functions
         //List mapClosures = []
         //for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it, e, c -> " + f + "}"))
-         tOut = new Table() //TODO: is this okay???
+        // tOut = new Table() //TODO: is this okay???
 
         while (n-- > 0){
             //tNew.print()
             //tNew = step(tLast, e, direction)
-            tNew = stepMap(tLast, e, direction, mapFunctions)
+            tNew = stepMap(tLast, e, direction, follow, mapFunctions)
             //tNew.print()
             //if (mapFunctions) tNew = map(tNew, mapFunctions) //map
             //tNew.print()

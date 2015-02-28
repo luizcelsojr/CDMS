@@ -205,22 +205,15 @@ class AlgebraTest extends GroovyTestCase {
         t.orderAsc('rank')
         t.print()  */
 
-        //AdvancedEditDistance.prettyPrint(AdvancedEditDistance.computeEditDistance("Japan", "China", ["Copy": 0, "Replace": 2, "Delete": 1, "Insert": 1, "Twiddle": 2, "Kill": 1]))
+        vPerson.print()
 
+        Table r = basicOpr.select(vPerson, {it.id == 16})
 
-        Table dist = basicOpr.beta(rConn, eConn, 4, {true}, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.Weight.toFloat()", "it.maxDist = it.maxDist + it.Weight.toFloat()"], ["id_n", "id"], [[aggr:"min", func:"it.minDist", as:"minDist"], [aggr:"max", func:"it.maxDist", as:"maxDist"]], [])
-        //dist.orderAsc(["id", "id_n"])
-        dist = basicOpr.project(dist, ["id", "id_n", "minDist", "maxDist"])
+        Table t = basicOpr.beta(r, eKnows, 40, {true}, Constants.BOTH, ['knows'], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], [])
+        t.orderAsc('rank')
 
-        Table distPerPoint = basicOpr.reduce(dist, ["id_n"], [[aggr:"sum", func:"it.minDist", as:"sum"], [aggr:"size", func:"", as:"size"]])
-        distPerPoint = basicOpr.set(distPerPoint, ["it.average = it.sum/it.size"])
-        distPerPoint = basicOpr.project(distPerPoint, ["id_n", "average"])
-        distPerPoint.print()
+        t.print()
 
-
-        Table distTotal  = basicOpr.reduce(dist, [""], [[aggr:"sum", func:"it.minDist", as:"sum"], [aggr:"size", func:"", as:"size"]])
-        distTotal = basicOpr.set(distTotal, ["it.average = it.sum/it.size"])
-        distTotal.print()
 
 
 
