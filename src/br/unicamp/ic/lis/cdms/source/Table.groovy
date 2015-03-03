@@ -52,7 +52,7 @@ class Table implements Iterable{
         println this.schema
 
         for (row in this.contents){
-            println this.schema.collect{(!row[it])?"<null>":(row[it].class == String)?"'" + row[it] + "'":(row[it].class == Double)?String.format("%1\$,.2f", row[it]):row[it]}
+            println this.schema.collect{(row[it] == null)?"<null>":(row[it].class == String)?"'" + row[it] + "'":(row[it].class == Double)?String.format("%1\$,.2f", row[it]):row[it]}
         }
     }
 

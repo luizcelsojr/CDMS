@@ -151,7 +151,7 @@ class AlgebraTest extends GroovyTestCase {
 
         //Test beta (distance) and select
 
-        rConnSmall = basicOpr.beta(rConnSmall, eConn, 4, {true}, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.Weight.toFloat()", "it.maxDist = it.maxDist + it.Weight.toFloat()"], ["id_n", "id"], [[aggr:"min", func:"it.minDist", as:"minDist"], [aggr:"max", func:"it.maxDist", as:"maxDist"]], [])
+        rConnSmall = basicOpr.beta(rConnSmall, eConn, new Table(), 4, { true }, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.E_Weight.toFloat()", "it.maxDist = it.maxDist + it.E_Weight.toFloat()"], ["id_n", "id"], [[aggr: "min", func: "it.minDist", as: "minDist"], [aggr: "max", func: "it.maxDist", as: "maxDist"]], ["current.minDist = [newV.minDist, current.minDist].min()", "current.maxDist = [newV.maxDist, current.maxDist].max()"])
         rConnSmall.orderAsc(["id", "id_n"])
         rConnSmall = basicOpr.project(rConnSmall, ["id", "id_n", "minDist", "maxDist"])
         assertEquals(0.6, rConnSmall.getRowAt(6).minDist, 0.001) //rConnSmall = basicOpr.select(rConnSmall, {it.id == 3 && it.id_n == 7})
@@ -161,7 +161,7 @@ class AlgebraTest extends GroovyTestCase {
 
         //Test beta (pagerank)
 
-        t = basicOpr.beta(vPerson, eKnows, 3, {true}, Constants.BOTH, ['knows'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], ["it.rank = 0.0f"])
+        t = basicOpr.beta(vPerson, eKnows, new Table(), 3, { true }, Constants.BOTH, ['knows'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"]], ["current.rank = newV.rank"])
         t.orderAsc('rank')
         assertEquals(70.49, t.getRowAt(0).rank, 0.1)
         assertEquals(98.03, t.getRowAt(3).rank, 0.1)
@@ -205,12 +205,19 @@ class AlgebraTest extends GroovyTestCase {
         t.orderAsc('rank')
         t.print()  */
 
-        vPerson.print()
+        //vPerson.print()
 
         Table r = basicOpr.select(vPerson, {it.id == 16})
+        Table v = basicOpr.set(vPerson, ["it.p = (it.id == 16 || it.id == 14)?0.5:0.0"])
 
-        Table t = basicOpr.beta(r, eKnows, 40, {true}, Constants.BOTH, ['knows'], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], [])
-        t.orderAsc('rank')
+        v.print()
+
+        //relevance
+        //Table t = basicOpr.beta(r, eKnows, vPerson, 10, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"]], [])
+        Table t = basicOpr.beta(v, eKnows, v, 10, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0/9f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"], [aggr: "post", func: "it.rank = (1-0.25)*it.rank + it.V_p*0.25"]], ["current.rank = newV.rank"])
+        t.orderDesc('rank')
+
+        t = basicOpr.project(t, ["id", "Label", "p", "rank"])
 
         t.print()
 

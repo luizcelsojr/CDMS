@@ -50,8 +50,8 @@ class Operators {
 
 
         if (direction == Constants.INBOUND) tOut =  stepIn(vIn, E, [])
-        else if (direction == Constants.OUTBOUND) tOut =  stepOut(vIn, E)
-        else if (direction == Constants.BOTH) tOut =  union(stepIn(vIn, E, []), stepOut(vIn, E))
+        else if (direction == Constants.OUTBOUND) tOut =  stepOut(vIn, E, [])
+        else if (direction == Constants.BOTH) tOut =  union(stepIn(vIn, E, []), stepOut(vIn, E, []))
 
 
 /*        for (v in V){
@@ -106,10 +106,11 @@ class Operators {
         return tOut
     }
 
-    Table stepOut(Table V, Table E, String newIdName = "id_n"){
+    Table stepOut(Table V, Table E, def follow = [], String newIdName = "id_n"){
         Table tOut = new Table()
 
-        E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
+        //E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
+        E = renameAll(E, "E", "")
 
         tOut =  tetaJoin(V, E, {it.id_n == it.E_id})
         tOut = rename(tOut, [["E_id_n", newIdName]])
@@ -121,7 +122,8 @@ class Operators {
     Table stepIn(Table V, Table E, def follow = [], String newIdName = "id_n"){
         Table tOut = new Table()
 
-        E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
+        //E = rename(E, [["id", "E_id"], ["id_n", "E_id_n"]])
+        E = renameAll(E, "E", "")
 
         tOut =  tetaJoin(V, E, {it.id_n == it.E_id_n})
         tOut = rename(tOut, [["E_id", newIdName]])
@@ -130,9 +132,9 @@ class Operators {
 
     }
 
-    Table stepMap(Table V, Table E, Object direction, def follow = [], List mapFunctions){
+    Table stepMap(Table R, Table E, Table V, Object direction, Object follow = [], List mapFunctions){
         //TODO: filter labels (add parameter)
-        assert "id" in V.getSchema(), "First table must have an 'id' column"
+        assert "id" in R.getSchema(), "First table must have an 'id' column"
         assert "id" in E.getSchema(), "Second table must have an 'id' column"
         assert "id_n" in E.getSchema(), "Second table must have an 'id_n' column"
 
@@ -141,23 +143,29 @@ class Operators {
         //V.print()
 
 
-        if (!("id_n" in V.getSchema())) set(V, ["it.id_n = it.id"])
+        if (!("id_n" in R.getSchema())) R = set(R, ["it.id_n = it.id"])
 
+        R = set(R, ["it.id_old = it.id_n"])
 
-        if (direction == Constants.INBOUND) t =  stepIn(V, E, [], "newId")
-        else if (direction == Constants.OUTBOUND) t =  stepOut(V, E, "newId")
-        else if (direction == Constants.BOTH) t =  union(stepIn(V, E, [], "newId"), stepOut(V, E, "newId"))
+        if (direction == Constants.INBOUND) t =  stepIn(R, E, [], "newId")
+        else if (direction == Constants.OUTBOUND) t =  stepOut(R, E, [], "newId")
+        else if (direction == Constants.BOTH) t =  union(stepIn(R, E, [], "newId"), stepOut(R, E, [], "newId"))
+
+        if (V.getSize()>0) {
+            V = renameAll(V, "V", "")
+            t = tetaJoin(t, V, {it.newId == it.V_id})
+        }
 
         //t.print()
 
         List mapClosures = []
         for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it -> " + f + "}"))
 
-        Table tCount = reduce(t, ["id_n"], [[aggr:"sum", func:"1", as:"c"]])
-        tCount = project(set(tCount, ["it.idCount = it.id_n"]), ["idCount", "c"])
+        Table tCount = reduce(t, ["id_old"], [[aggr:"sum", func:"1", as:"c"]])
+        tCount = project(set(tCount, ["it.idCount = it.id_old"]), ["idCount", "c"])
         //tCount.print()
 
-        t = tetaJoin(t, tCount, {it.id_n == it.idCount})
+        t = tetaJoin(t, tCount, {it.id_old == it.idCount})
         //t.print()
 
         for (row in t) {
@@ -172,53 +180,9 @@ class Operators {
 
     }
 
-
-    Table reduceDeprecated(Table t, List <Map> reduceFunctions){
-        //aggregation example:
-        // [aggr:"min", func:"it.dist", as:"minDist"]
-
-        Table tOut = new Table()
-
-        if (! t.getSize()) return t
-
-        t.orderAsc('id_n')
-
-        //setup reduce functions
-        for (f in reduceFunctions) {
-            f.closure = this.sh.evaluate("{it -> " + f.func + "}")
-            f.group = []
-        }
-
-        def i = 0
-        def cRow = t.getRowAt(0)
-        t.each{
-
-            if ((it.id_n != cRow.id_n) ) { //|| (! t.iterator().hasNext())
-                //for (row in t) setClosures.each{it(row)}
-                for (f in reduceFunctions) {
-                    cRow[f.as] = (f.group."${f.aggr}"())
-                    f.group = []
-                }
-                tOut.addRow(cRow)
-                cRow = it
-
-            }
-
-            for (f in reduceFunctions) f.group.add( f.closure(it))
-        }
-
-        //execute for the last row
-        for (f in reduceFunctions)
-            cRow[f.as] = (f.group."${f.aggr}"())
-        tOut.addRow(cRow)
-
-
-        return tOut
-    }
-
     //public Table beta (Table t, Integer n, Closure condition, direction, follow, List set, List mapFunctions, List reduceFunctions, List updateFunctions) {}
 
-    public Table beta (Table t, Table e, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceGroupBy, List reduceFunctions, List updateFunctions) {
+    public Table beta (Table t, Table e, Table v, Integer n, Closure condition, Object direction, Object follow, List setFunctions, List mapFunctions, List reduceGroupBy, List reduceFunctions, List updateFunctions) {
         //TODO: check schemas
         if (n < 1) return t
 
@@ -242,20 +206,24 @@ class Operators {
         while (n-- > 0){
             //tNew.print()
             //tNew = step(tLast, e, direction)
-            tNew = stepMap(tLast, e, direction, follow, mapFunctions)
+            tNew = stepMap(tLast, e, v, direction, follow, mapFunctions)
             //tNew.print()
             //if (mapFunctions) tNew = map(tNew, mapFunctions) //map
             //tNew.print()
 
-            if (updateFunctions) tOut = set(tOut, updateFunctions)
+            //if (updateFunctions) tOut = set(tOut, updateFunctions)
             //tOut.print()
 
             if (reduceFunctions) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
+            //tNew.print()
 
-            tOut = union(tOut, tNew)
+            //tOut = union(tNew, tOut)
             //tOut.print()
 
-            if (reduceFunctions) tOut = reduce(tOut, reduceGroupBy, reduceFunctions )
+            //if (reduceFunctions) tOut = reduce(tOut, reduceGroupBy, reduceFunctions )
+            //tOut.print()
+
+            if (updateFunctions) tOut = update(tOut, tNew, reduceGroupBy, updateFunctions)
             //tOut.print()
 
             tLast = tNew.copy()//tOut.copy()
@@ -267,7 +235,7 @@ class Operators {
 
 
 
-    Table reduce(Table t, List group, List <Map> reduceFunctions){
+    Table reduce(Table t, List group, List <Map> reduceFunctionsIn){
         //aggregation example:
         // [aggr:"min", func:"it.dist", as:"minDist"]
 
@@ -277,12 +245,19 @@ class Operators {
 
         t.orderAsc(group)
 
+        List postClosures = [] //closures that do no aggregate (workaround)
 
-
+        List <Map> reduceFunctions = []
         //setup reduce functions
-        for (f in reduceFunctions) {
-            f.closure = this.sh.evaluate("{it -> " + f.func + "}")
-            f.group = []
+        for (f in reduceFunctionsIn) {
+            if (f.aggr == 'post'){//not to be run during grouping (workaround since we don't have expr parsing)
+                postClosures.add(f.func)
+            }else{
+                f.closure = this.sh.evaluate("{it -> " + f.func + "}")
+                f.group = []
+                reduceFunctions.add(f)
+
+            }
         }
 
         def i = 0
@@ -309,13 +284,55 @@ class Operators {
             cRow[f.as] = (f.group."${f.aggr}"())
         tOut.addRow(cRow)
 
+        if (postClosures) tOut = set(tOut, postClosures)
+
 
         return tOut
     }
 
+
+    public Table update(Table oldT, Table newT, List group, List updateFunctions){
+        //TODO: asset it has a group and functions
+        if (!updateFunctions) return t
+        //setup and execute set functions
+        Table tOut = new Table()
+        List updateClosures = []
+        for (f in updateFunctions) updateClosures.add(this.sh.evaluate("{current, newV -> " + f + "}"))
+
+        for (rOld in oldT){
+            def addedO = false
+            for (rNew in newT){
+                if (group.every{rOld."$it" == rNew."$it"}){
+                    //Map newRow = rOld
+                    updateClosures.each{it(rOld, rNew)}
+                    tOut.addRow(rOld)
+                    addedO = true
+                }
+            }
+            if (!addedO) tOut.addRow(rOld)
+        }
+
+        //another pass to complete the full join
+        for (rNew in newT){
+            def addedO = false
+            for (rOld in oldT){
+                if (group.every{rOld."$it" == rNew."$it"}){
+                    addedO = true
+                }
+            }
+            if (!addedO) tOut.addRow(rNew)
+        }
+
+        return tOut
+    }
+
+
     public Table rename(Table t, List renamings){
         Table tOut = new Table()
-        for (r in renamings) assert (r.size()==2 && r[0]!=r[1]), "Wooops, $r is not a valid attribute renaming."
+        for (r in renamings) {
+            assert (r.size()==2 && r[0]!=r[1]), "Wooops, $r is not a valid attribute renaming."
+            assert (t.getSchema().contains(r[0])), "Wooooops, cannot rename ${r[0]} because it doesn't exist!"
+        }
 
         for (row in t) {
             for (r in renamings){
@@ -327,13 +344,17 @@ class Operators {
         return tOut
     }
 
-    public Table renameAll(Table t, String prefix){
+    public Table renameAll(Table t, String prefix, String suffix = ""){
         Table tOut = new Table()
         Map newRow
         for (row in t) {
             newRow = [:]
-            for (a in row)
-                newRow[prefix + "_" + a.key] = a.value
+            for (a in row){
+                def newName = a.key
+                if (prefix) newName = prefix + "_" + newName
+                if (suffix) newName = newName + "_" + suffix
+                newRow[newName] = a.value
+            }
             tOut.addRow(newRow)
         }
         return tOut
@@ -377,5 +398,47 @@ class Operators {
         return t.unique()
     }
 
+    Table reduceDeprecated(Table t, List <Map> reduceFunctions){
+        //aggregation example:
+        // [aggr:"min", func:"it.dist", as:"minDist"]
+
+        Table tOut = new Table()
+
+        if (! t.getSize()) return t
+
+        t.orderAsc('id_n')
+
+        //setup reduce functions
+        for (f in reduceFunctions) {
+            f.closure = this.sh.evaluate("{it -> " + f.func + "}")
+            f.group = []
+        }
+
+        def i = 0
+        def cRow = t.getRowAt(0)
+        t.each{
+
+            if ((it.id_n != cRow.id_n) ) { //|| (! t.iterator().hasNext())
+                //for (row in t) setClosures.each{it(row)}
+                for (f in reduceFunctions) {
+                    cRow[f.as] = (f.group."${f.aggr}"())
+                    f.group = []
+                }
+                tOut.addRow(cRow)
+                cRow = it
+
+            }
+
+            for (f in reduceFunctions) f.group.add( f.closure(it))
+        }
+
+        //execute for the last row
+        for (f in reduceFunctions)
+            cRow[f.as] = (f.group."${f.aggr}"())
+        tOut.addRow(cRow)
+
+
+        return tOut
+    }
 
 }
