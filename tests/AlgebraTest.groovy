@@ -130,6 +130,10 @@ class AlgebraTest extends GroovyTestCase {
         t.orderAsc(["id", "a", "b"])
         assertEquals(t.getRawContents(), [[id:1, a:0, b:3], [id:1, a:5, b:2], [id:2, a:0, b:1]])
 
+        //Test test all
+        assertEquals(true, t.testEvery({it.id > 0}))
+        assertEquals(false, t.testEvery({(it.b - it.a) > 0}))
+
         //test reduce
         t = new Table(data2)
         t.orderAsc(["id", "idn", "b"])
@@ -139,6 +143,10 @@ class AlgebraTest extends GroovyTestCase {
         //Test project
         t = basicOpr.project(t, ["id", "idn", "b"])
         assertEquals(t.getRawContents(), [[id:1, idn:10, b:3], [id:1, idn:15, b:2], [id:1, idn:15, b:4], [id:2, idn:10, b:1]])
+
+        //Test raname
+        t = basicOpr.renameAll(vPerson, "new")
+        assertEquals(15, t.getRowAt(1).new_id)
 
         //Test step
         t = basicOpr.step(basicOpr.set(new Table(['id', 'Label', 'type'], vPersonDataSmall[1..2] ), ["it.id_n = it.id"]),
@@ -159,16 +167,19 @@ class AlgebraTest extends GroovyTestCase {
         assertEquals(0.6, rConnSmall.getRowAt(18).minDist, 0.001) //rConnSmall = basicOpr.select(rConnSmall, {it.id == 4 && it.id_n == 6})
         assertEquals(1.2, rConnSmall.getRowAt(18).maxDist, 0.001)
 
-        //Test beta (pagerank)
+        //Test beta (naive pagerank)
 
         t = basicOpr.beta(vPerson, eKnows, new Table(), 3, { true }, Constants.BOTH, ['knows'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"]], ["current.rank = newV.rank"])
         t.orderAsc('rank')
         assertEquals(70.49, t.getRowAt(0).rank, 0.1)
         assertEquals(98.03, t.getRowAt(3).rank, 0.1)
 
-        //Test raname
-        t = basicOpr.renameAll(vPerson, "new")
-        assertEquals(15, t.getRowAt(1).new_id)
+        //Test beta (pagerank with priors)
+        Table v = basicOpr.set(vPerson, ["it.p = (it.id == 16 || it.id == 14)?0.5:0.0"])
+        t = basicOpr.beta(v, eKnows, v, 3, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0/9f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"], [aggr: "post", func: "it.rank = (1-0.25)*it.rank + it.V_p*0.25"]], ["current.rank = newV.rank"])
+        t.orderDesc('rank')
+        assertEquals(0.20, t.getRowAt(0).rank, 0.1)
+        assertEquals(0.09, t.getRowAt(3).rank, 0.1)
 
     }
 
@@ -214,10 +225,10 @@ class AlgebraTest extends GroovyTestCase {
 
         //relevance
         //Table t = basicOpr.beta(r, eKnows, vPerson, 10, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"]], [])
-        Table t = basicOpr.beta(v, eKnows, v, 10, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0/9f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"], [aggr: "post", func: "it.rank = (1-0.25)*it.rank + it.V_p*0.25"]], ["current.rank = newV.rank"])
+        Table t = basicOpr.beta(v, eKnows, v, 10, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0/9f", "it.delta = 1.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"], [aggr: "post", func: "it.rank = (1-0.25)*it.rank + it.V_p*0.25"]], ["current.delta = (newV.rank - current.rank).abs()", "current.rank = newV.rank"], [['testEvery', {it.delta < 0.001}]])
         t.orderDesc('rank')
 
-        t = basicOpr.project(t, ["id", "Label", "p", "rank"])
+        //t = basicOpr.project(t, ["id", "Label", "p", "rank"])
 
         t.print()
 

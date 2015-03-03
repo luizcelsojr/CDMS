@@ -14,7 +14,6 @@ class Table implements Iterable{
     private List contents = []
     private schema = [] as Set
     Integer size = 0
-    //private Integer counter = 0
 
     Table (Map[] t){
         for (r in t)
@@ -30,7 +29,6 @@ class Table implements Iterable{
 
             this.addRow(newRow)
         }
-
     }
 
     Set getSchema(){return this.schema}
@@ -41,25 +39,7 @@ class Table implements Iterable{
         this.size++
     }
 
-    def print_old(){
-        println "XXXXXXX table XXXXXXXXX"
-        println this.schema
-        this.contents.each{println it.collect{(!it.value)?"<null>":(it.value.class == String)?"'$it.value'":(it.value.class == Double)?String.format("%1\$,.2f", it.value):it.value}}
-    }
-
-    def print(){
-        println "XXXXXXX table XXXXXXXXX"
-        println this.schema
-
-        for (row in this.contents){
-            println this.schema.collect{(row[it] == null)?"<null>":(row[it].class == String)?"'" + row[it] + "'":(row[it].class == Double)?String.format("%1\$,.2f", row[it]):row[it]}
-        }
-    }
-
-
-    Integer getSize(){
-        return this.size
-    }
+    Integer getSize(){return this.size}
 
     Table unique(){
         return new Table( this.contents.unique() as Map[])
@@ -70,14 +50,17 @@ class Table implements Iterable{
     }
 
     def orderAsc(List attributes) {
-        for (attr in attributes.reverse()){
+        for (attr in attributes.reverse())
             this.contents.sort{a,b -> a."$attr" <=> b."$attr"}
-        }
-
     }
 
     def orderDesc(column) {
         this.contents.sort{a,b -> b."$column" <=> a."$column"}
+    }
+
+    def orderDesc(List attributes) {
+        for (attr in attributes.reverse())
+            this.contents.sort{a,b -> b."$attr" <=> a."$attr"}
     }
 
     Map getRowAt(Integer index){
@@ -88,17 +71,6 @@ class Table implements Iterable{
         return this.contents
     }
 
-    /*
-    Table clone() {
-        def bos = new ByteArrayOutputStream()
-        def oos = new ObjectOutputStream(bos)
-        oos.writeObject(this); oos.flush()
-        def bin = new ByteArrayInputStream(bos.toByteArray())
-        def ois = new ObjectInputStream(bin)
-        return ois.readObject()
-    }
-    */
-
     Table copy() {
         Table clone= new Table();
         //TODO: clone of a clone
@@ -107,17 +79,23 @@ class Table implements Iterable{
         return clone;
     }
 
-/*
-    protected Object clone() throws CloneNotSupportedException {
-
-        Table clone=(Table)super.clone();
-
-        this.contents.each{clone.addRow(it)}
-
-        return clone;
-
+    Boolean testEvery(Closure test){
+        return this.contents.every(test)
     }
-*/
+
+    Boolean testAny(Closure test){
+        return this.contents.any(test)
+    }
+
+
+    def print(){
+        println "XXXXXXX table XXXXXXXXX"
+        println this.schema
+
+        for (row in this.contents){
+            println this.schema.collect{(row[it] == null)?"<null>":(row[it].class == String)?"'" + row[it] + "'":(row[it].class == Double)?String.format("%1\$,.2f", row[it]):row[it]}
+        }
+    }
 
     @Override
     Iterator iterator() {
@@ -125,13 +103,5 @@ class Table implements Iterable{
         [hasNext: { counter < this.size },
                 next: { counter++;return this.contents[counter -1].clone() }] as Iterator
     }
-/*
-    public Table clone() throws CloneNotSupportedException {
-        Table result = new Table()
-        //result.contents = []
-        this.contents.each{result.addRow(it)}
-        //result.size = size
-        return result
-    }
-*/
+
 }

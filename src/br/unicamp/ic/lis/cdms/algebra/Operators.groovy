@@ -182,51 +182,32 @@ class Operators {
 
     //public Table beta (Table t, Integer n, Closure condition, direction, follow, List set, List mapFunctions, List reduceFunctions, List updateFunctions) {}
 
-    public Table beta (Table t, Table e, Table v, Integer n, Closure condition, Object direction, Object follow, List setFunctions, List mapFunctions, List reduceGroupBy, List reduceFunctions, List updateFunctions) {
+    public Table beta (Table t, Table e, Table v, Integer n, Closure condition, Object direction, Object follow, List setFunctions, List mapFunctions, List reduceGroupBy, List reduceFunctions, List updateFunctions, List stopConditions = []) {
         //TODO: check schemas
+        //TODO: check arguments
         if (n < 1) return t
 
-        Table tNew = new Table()
+        Table tOut = new Table()
+        Table tNew = t.copy()
+        tNew = set(tNew, ['it.id_n = it.id'])
 
-        Table tOut = t.copy()
-
-
-        //if (setFunctions) set(tOut, setFunctions.add('it.id_n = it.id'))
-        if (setFunctions) tOut = set(tOut, setFunctions)
-
-        tOut = set(tOut, ['it.id_n = it.id'])
-
-        Table tLast = tOut.copy()
-
-        //setup map functions
-        //List mapClosures = []
-        //for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it, e, c -> " + f + "}"))
-        // tOut = new Table() //TODO: is this okay???
+        if (setFunctions) tNew = set(tNew, setFunctions)
 
         while (n-- > 0){
             //tNew.print()
-            //tNew = step(tLast, e, direction)
-            tNew = stepMap(tLast, e, v, direction, follow, mapFunctions)
+            tNew = stepMap(tNew, e, v, direction, follow, mapFunctions)
             //tNew.print()
-            //if (mapFunctions) tNew = map(tNew, mapFunctions) //map
-            //tNew.print()
-
-            //if (updateFunctions) tOut = set(tOut, updateFunctions)
-            //tOut.print()
 
             if (reduceFunctions) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
             //tNew.print()
 
-            //tOut = union(tNew, tOut)
-            //tOut.print()
-
-            //if (reduceFunctions) tOut = reduce(tOut, reduceGroupBy, reduceFunctions )
-            //tOut.print()
-
             if (updateFunctions) tOut = update(tOut, tNew, reduceGroupBy, updateFunctions)
             //tOut.print()
 
-            tLast = tNew.copy()//tOut.copy()
+            if (stopConditions) for (c in stopConditions){
+                def test = c[0]
+                if (tOut."$test"(c[1])) return tOut
+            }
         }
 
         return tOut
