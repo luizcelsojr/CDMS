@@ -187,26 +187,34 @@ class Operators {
         //TODO: check arguments
         if (n < 1) return t
 
-        Table tOut = new Table()
+        //Table tOut = new Table()
         Table tNew = t.copy()
         tNew = set(tNew, ['it.id_n = it.id'])
 
-        if (setFunctions) tNew = set(tNew, setFunctions)
 
-        while (n-- > 0){
+        if (setFunctions) tNew = set(tNew, setFunctions)
+        Table tOut = tNew
+
+        Integer i = 0
+        while (i++ < n){
             //tNew.print()
             tNew = stepMap(tNew, e, v, direction, follow, mapFunctions)
             //tNew.print()
 
-            if (reduceFunctions) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
+            //if (reduceFunctions) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
+            if (reduceGroupBy) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
             //tNew.print()
 
             if (updateFunctions) tOut = update(tOut, tNew, reduceGroupBy, updateFunctions)
+            else tOut = tNew
             //tOut.print()
 
             if (stopConditions) for (c in stopConditions){
                 def test = c[0]
-                if (tOut."$test"(c[1])) return tOut
+                if (tOut."$test"(c[1])) {
+                    println i
+                    return tOut
+                }
             }
         }
 

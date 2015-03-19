@@ -214,24 +214,38 @@ class AlgebraTest extends GroovyTestCase {
 
         Table t = basicOpr.beta(vPerson, eCoKnows, 3, {true}, Constants.BOTH, ['fof'], ["it.rank = 100.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr:"sum", func:"it.rank", as:"rank"]], ["it.rank = 0.0f"])
         t.orderAsc('rank')
-        t.print()  */
+        t.print()
+         //paths
+        Table r = basicOpr.select(rConn, {it.id == 3})
 
-        //vPerson.print()
+        Table closure = basicOpr.beta(r, eConn, rConn, 10, { true }, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.path = it.id.toString()"], ["it.minDist = it.minDist + it.E_Weight.toFloat()", "it.path = it.path + '-' + it.E_label + '-' +  it.V_id"], ["id_n", "id"], [[aggr: "min", func: "it.minDist", as: "minDist"]], ["current.minDist = [newV.minDist, current.minDist].min()"], [['testAny', {it.id_n == 8}]])
+        closure.orderAsc(["id", "id_n"])
+        //closure = basicOpr.project(closure, ["id", "id_n", "minDist", "maxDist"])
 
-        Table r = basicOpr.select(vPerson, {it.id == 16})
-        Table v = basicOpr.set(vPerson, ["it.p = (it.id == 16 || it.id == 14)?0.5:0.0"])
+        closure.print()
 
-        v.print()
+        //closure
+        r = basicOpr.select(rConn, {it.id == 3})
 
+        closure = basicOpr.beta(r, eConn, rConn, 7, { true }, Constants.OUTBOUND, ['connects'], ["it.found = false"], [], ["id_n", "id"], [], ["current.found = true"], [['testEvery', {it.found == true}]])
+        closure.orderAsc(["id", "id_n"])
+        //closure = basicOpr.project(closure, ["id", "id_n", "minDist", "maxDist"])
+
+        closure.print()
+
+        */
+
+        Table r = basicOpr.select(vPerson, {it.id in [14, 19]})
         //relevance
-        //Table t = basicOpr.beta(r, eKnows, vPerson, 10, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"]], [])
-        Table t = basicOpr.beta(v, eKnows, v, 10, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0/9f", "it.delta = 1.0f"], ["it.rank = it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"], [aggr: "post", func: "it.rank = (1-0.25)*it.rank + it.V_p*0.25"]], ["current.delta = (newV.rank - current.rank).abs()", "current.rank = newV.rank"], [['testEvery', {it.delta < 0.001}]])
-        t.orderDesc('rank')
-
-        //t = basicOpr.project(t, ["id", "Label", "p", "rank"])
+        //Table t = basicOpr.beta(r, eKnows, vPerson, 1, { true }, Constants.BOTH, ['knows'], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"]], [["current.rank = newV.rank + current.rank"]])
+        Table t = basicOpr.beta(r, eKnows, vPerson, 1, { true }, Constants.BOTH, ['knows'], ["it.count = 1"], [], ['id_n'], [[aggr: "sum", func: "it.count", as: "count"]], [["current.count = newV.count + current.count"]])
+        t.orderAsc('rank')
+        //t = basicOpr.project(t, ["id", "Label", "type", "id_n", "E_label", "V_id", "V_Label", "V_type"])
 
         t.print()
 
+        //TODO: URGENT: check why this doesnt work:
+        //Table t = basicOpr.beta(r, eKnows, vPerson, 1, { true }, Constants.BOTH, ['knows'], [], [], [], [], [])
 
 
 

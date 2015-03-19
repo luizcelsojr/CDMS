@@ -88,13 +88,16 @@ class Table implements Iterable{
     }
 
 
-    def print(){
+    def print(int count = 0){
         println "XXXXXXX table XXXXXXXXX"
         println this.schema
 
-        for (row in this.contents){
+        if ((count < 1) || (count > this.size)) count = this.size
+
+        for (row in this.contents[0..(count-1)]){
             println this.schema.collect{(row[it] == null)?"<null>":(row[it].class == String)?"'" + row[it] + "'":(row[it].class == Double)?String.format("%1\$,.2f", row[it]):row[it]}
         }
+        println "XXXXXXX ${this.size} rows XXXXXXXXX"
     }
 
     @Override

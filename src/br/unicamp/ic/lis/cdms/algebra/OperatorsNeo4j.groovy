@@ -20,10 +20,10 @@ class OperatorsNeo4j extends Operators{
         this.db = db
     }
 
-    public Table beta (Table t, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceFunctions, List updateFunctions){
-        return beta (t, n, condition, direction, follow, setFunctions, mapFunctions, ['id_n'], reduceFunctions, updateFunctions)
+    public Table beta_old (Table t, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceFunctions, List updateFunctions){
+        return beta_old (t, n, condition, direction, follow, setFunctions, mapFunctions, ['id_n'], reduceFunctions, updateFunctions)
     }
-    public Table beta (Table t, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceGroupBy, List reduceFunctions, List updateFunctions){
+    public Table beta_old (Table t, Integer n, Closure condition, direction, follow, List setFunctions, List mapFunctions, List reduceGroupBy, List reduceFunctions, List updateFunctions){
         if (n < 1) return t
 
         Table tNew
@@ -56,7 +56,7 @@ class OperatorsNeo4j extends Operators{
                     newRow.id_n = ne[-1].id
 
                     for (attribute in ne[-1].map()){
-                        def attributeName = attribute.key + "_n"
+                        def attributeName = "V_" + attribute.key
                         newRow."$attributeName" = attribute.value
                     }
 
@@ -80,6 +80,68 @@ class OperatorsNeo4j extends Operators{
 
         return tOut
     }
+
+    public Table beta (Table t, Integer n, Closure condition, Object direction, Object follow, List setFunctions, List mapFunctions, List reduceGroupBy, List reduceFunctions, List updateFunctions, List stopConditions = []) {
+        //TODO: check schemas
+        //TODO: check arguments
+        if (n < 1) return t
+
+        Table tOut = new Table()
+        Table tLast
+        Table tNew = t.copy()
+        tNew = set(tNew, ['it.id_n = it.id'])
+
+        if (setFunctions) tNew = set(tNew, setFunctions)
+
+        //setup map functions
+        List mapClosures = []
+        for (f in mapFunctions) mapClosures.add(this.sh.evaluate("{it, e, c -> " + f + "}"))
+
+        def newRow
+        while (n-- > 0){
+            tLast = tNew
+            //tNew.print()
+            tNew = new Table()
+            for (row in tLast){
+                def neighborEdges = []
+                if (direction != Constants.OUTBOUND) neighborEdges.addAll(db.G().v(row.id_n).inE.filter{(follow)?it.label in follow: true}.outV.path().toList()) // if INBOUND or BOTH, add all inbound edges
+                if (direction != Constants.INBOUND) neighborEdges.addAll(db.G().v(row.id_n).outE.filter{(follow)?it.label in follow: true}.inV.path().toList()) // if OUTBOUND or BOTH, add all outbound edges
+
+                for (ne in neighborEdges) {
+                    newRow = row.clone()
+                    newRow.id_n = ne[-1].id
+
+                    for (attribute in ne[-1].map()){
+                        def attributeName = "V_" + attribute.key
+                        newRow."$attributeName" = attribute.value
+                    }
+
+                    //execute map functions
+                    mapClosures.each{it(newRow,ne[1],neighborEdges.size())}
+
+                    tNew.addRow(newRow)
+                }
+
+                //if (condition(row)) t2.addRow(row)
+            }
+            //tNew.print()
+
+            if (reduceFunctions) tNew = reduce(tNew, reduceGroupBy, reduceFunctions )
+            //tNew.print()
+
+            if (updateFunctions) tOut = update(tOut, tNew, reduceGroupBy, updateFunctions)
+            //tOut.print()
+
+            if (stopConditions) for (c in stopConditions){
+                def test = c[0]
+                if (tOut."$test"(c[1])) return tOut
+            }
+        }
+
+        return tOut
+
+    }
+
 
     Table scanFilterV(Closure filter, Integer limit = 0) {
         def V = new Table()
