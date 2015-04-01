@@ -1,0 +1,6 @@
+A := SCAN(V,{(id=3) OR (id=4)})
+B := BETA(R, A, A, 3, IN, [hey, d])
+--A := SCAN(V,{(id=3) OR (id=4)})
+--B := SELECT(A,{(id=3)})
+RETURN A
+

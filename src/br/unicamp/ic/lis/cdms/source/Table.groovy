@@ -92,6 +92,11 @@ class Table implements Iterable{
         println "XXXXXXX table XXXXXXXXX"
         println this.schema
 
+        if (!this.size) {
+            println "XXXXXXX 0 rows XXXXXXXXX"
+            return
+        }
+
         if ((count < 1) || (count > this.size)) count = this.size
 
         for (row in this.contents[0..(count-1)]){

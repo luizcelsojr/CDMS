@@ -1,4 +1,4 @@
-
+//groovybeta
 /*
 Table Cuisine = opr.scanFilterV({it.type == 'CUISINE'})
 

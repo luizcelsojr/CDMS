@@ -5,6 +5,12 @@ import br.unicamp.ic.lis.cdms.source.Neo4jDB
 import br.unicamp.ic.lis.cdms.source.Table
 import br.unicamp.ic.lis.cdms.util.Constants
 import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph
+import br.unicamp.ic.lis.cdms.queryproc.parser.betaLexer
+import br.unicamp.ic.lis.cdms.queryproc.parser.betaParser
+import org.antlr.v4.runtime.ANTLRInputStream
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.tree.ParseTree
+import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.neo4j.graphdb.GraphDatabaseService
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -30,6 +36,13 @@ class BetaQueryProc extends QueryProcessor{
         def db = new Neo4jDB(this.neoGraphDB)
 
         Operators opr = db.getOperators()
+
+
+        if (!query.contains('//groovybeta')) {
+            return parse(query, opr)
+        }
+
+
         //parser =
         //engine.execute(query, parser, operators)
 
@@ -44,11 +57,8 @@ class BetaQueryProc extends QueryProcessor{
         def configuration = new CompilerConfiguration()
         configuration.addCompilationCustomizers(importCustomizer)
 
-
-
         // Create shell and execute script.
         def sh = new GroovyShell(configuration)
-
 
         //sh.evaluate(query )
         Table result
@@ -58,6 +68,19 @@ class BetaQueryProc extends QueryProcessor{
         result = queryClosure(opr)
 
         return result
+
+    }
+
+    Table parse(query, Operators opr){
+        ANTLRInputStream input = new ANTLRInputStream(query);
+        def lexer = new betaLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        def parser = new betaParser(tokens);
+        ParseTree tree = parser.query(); // begin parsing at query rule
+        System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+
+        def eval = new BetaVisitor(opr);
+        return eval.visit(tree);
 
     }
 }

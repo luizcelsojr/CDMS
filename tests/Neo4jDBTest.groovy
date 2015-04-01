@@ -66,14 +66,14 @@ class Neo4jDBTest extends GroovyTestCase {
         //relevance
         //Table t = opr.beta(r, 2, { true }, Constants.BOTH, [], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/it.c"], ['id_n'], [[aggr: "sum", func: "it.rank", as: "rank"]], [])
 
-
+        /*
         Table r = opr.scanFilterV({it.type=='CUISINE'})
         Table t = opr.beta(r, 2, { true }, Constants.INBOUND, [], ["it.rank = 1.0f"], ["it.rank = 0.8* it.rank/c"], ['id_n', 'id'], [[aggr: "sum", func: "it.rank", as: "rank"]], ["current.rank = newV.rank + current.rank"])
         t = opr.select(t, {it.id_n == 1283})
         t.orderDesc('rank')
         //t = opr.project(t, ["V_id", "V_Label", "rank"])
         t.print()
-
+        */
 
 
     }

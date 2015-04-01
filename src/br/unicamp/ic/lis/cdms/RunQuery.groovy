@@ -118,7 +118,9 @@ def runFromCommandLine(args){
 
     query = f.text
 
-    run(db_path, language, query)
+    Table result = run(db_path, language, query)
+
+    result.print()
 
 }
 
@@ -159,6 +161,7 @@ Table run(db_path, language, query){
 
     def time = Timer.closureBenchmark{result = qp.processQuery(query)}
     println "total time: ${time} --> ${time/1000/60/60}h ${time/1000/60}min"
+    println result
 
     return result
 
