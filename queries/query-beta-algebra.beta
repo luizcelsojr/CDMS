@@ -1,6 +1,9 @@
-A := SCAN(V,{(id=3) OR (id=4)})
-B := BETA(R, A, A, 3, IN, [hey, d])
+R := SCAN(V,{(id=3) OR (id=4)})
+CON := SCAN(E,{label='connects'})
+ROAD := SCAN(V,{type='road'})
+B := BETA(R, CON, ROAD, 3, IN, [knows, connects], {minDist := FLOAT(0)}, {minDist := minDist + FLOAT(c - 1) + FLOAT(E.Weight)}, {minDist := MIN(minDist) BY [id, id_n]}, {current.minDist := MIN([newV.minDist, current.minDist])})
+--beta(r, e, v, 4, { true }, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.E_Weight.toFloat()", "it.maxDist = it.maxDist + it.E_Weight.toFloat()"], ["id_n", "id"], [[aggr: "min", func: "it.minDist", as: "minDist"], [aggr: "max", func: "it.maxDist", as: "maxDist"]], ["current.minDist = [newV.minDist, current.minDist].min()", "current.maxDist = [newV.maxDist, current.maxDist].max()"])
 --A := SCAN(V,{(id=3) OR (id=4)})
 --B := SELECT(A,{(id=3)})
-RETURN A
+RETURN B
 

@@ -4,6 +4,7 @@ import br.unicamp.ic.lis.cdms.algebra.Operators
 import br.unicamp.ic.lis.cdms.queryproc.parser.betaBaseVisitor
 import br.unicamp.ic.lis.cdms.queryproc.parser.betaParser
 import br.unicamp.ic.lis.cdms.source.Table
+import br.unicamp.ic.lis.cdms.util.Constants
 import org.antlr.v4.runtime.misc.NotNull
 
 
@@ -44,16 +45,51 @@ class BetaVisitor extends betaBaseVisitor {
     }
 
     @Override public Table visitBeta(@NotNull betaParser.BetaContext ctx) {
-        println ctx.r
-        println ctx.v
-        println ctx.e
-        println ctx.dir
-        println ctx.list_labels().text.split(',')*.trim()
+        assert memory[ctx.r.text], "Runtime error: Table ${ctx.r.text} not declared."
+        def r = memory[ctx.r.text]
+
+        assert memory[ctx.v.text], "Runtime error: Table ${ctx.v.text} not declared."
+        def v = memory[ctx.v.text]
+
+        assert memory[ctx.e.text], "Runtime error: Table ${ctx.e.text} not declared."
+        def e = memory[ctx.e.text]
+
+        def n = ctx.n.text.toInteger()
+
+        def dir
+        switch(ctx.dir.text){
+            case 'IN':
+                dir = Constants.INBOUND
+                break
+            case 'OUT':
+                dir = Constants.OUTBOUND
+                break
+            default:
+                dir = Constants.BOTH
+                break
+        }
+
+        def labels = ctx.list_labels().text.split(',')*.trim()
+
+        def set = visit(ctx.set)
+
+        def map = visit(ctx.map)
+
+        List reduce = visit(ctx.reduce)
+
+        def update = visit(ctx.update)
+
+        println "$r, $e, $n, $v, $labels,\n $set, $map, $update"
+        println reduce
+
+        Table t = this.opr.beta(r, v, e, n, { true }, dir, labels, [set] as List, [map] as List, reduce[0] as List, [reduce[1]] as List, [update] as List)
+
 
         //        rConnSmall = basicOpr.beta(rConnSmall, eConn, new Table(), 4, { true }, Constants.BOTH, ['connects'], ["it.minDist = 0.0f", "it.maxDist = 0.0f"], ["it.minDist = it.minDist + it.E_Weight.toFloat()", "it.maxDist = it.maxDist + it.E_Weight.toFloat()"], ["id_n", "id"], [[aggr: "min", func: "it.minDist", as: "minDist"], [aggr: "max", func: "it.maxDist", as: "maxDist"]], ["current.minDist = [newV.minDist, current.minDist].min()", "current.maxDist = [newV.maxDist, current.maxDist].max()"])
 
 
-        return visitChildren(ctx);
+        //Table t = new Table()
+        return t
     }
 
     @Override public Table visitSelect(@NotNull betaParser.SelectContext ctx) {
@@ -114,18 +150,69 @@ class BetaVisitor extends betaBaseVisitor {
 
     @Override public String visitCol_test(@NotNull betaParser.Col_testContext ctx) {
         def left = 'it.' + ctx.left.text;
-        def right = (ctx.right.getType()== betaParser.IDENTIFIER)? 'it.' + ctx.right.text: ctx.right.text
+        def right = visit(ctx.right)
         def test =  ( ctx.test.getType() == betaParser.EQ )? "==": ctx.test.text
         return "$left $test $right";
 
         }
 
-    @Override public Table visitExpr(@NotNull betaParser.ExprContext ctx) { return visitChildren(ctx); }
-
-    /*
-    @Override public Table visitOperation(@NotNull betaParser.OperationContext ctx) {
-        return visitChildren(ctx);
+    @Override public String visitAssig_expr(@NotNull betaParser.Assig_exprContext ctx) {
+        def att = (ctx.attribute.getType()== betaParser.IDENTIFIER)?"it." + ctx.attribute.text: ctx.attribute.text
+        return att + '=' + visit(ctx.expr())
+        //return visitChildren(ctx);
     }
-*/
+
+    @Override public List visitAssig_aggr(@NotNull betaParser.Assig_aggrContext ctx) {
+
+        def by = ctx.list_labels().text.split(',')*.trim()
+        def agg = ctx.aggr.text //.toLowercase()
+        return [by, [aggr: agg.toLowerCase(), func: "it.${ctx.attribute.text}", as: ctx.attribute.text]]
+    }
+
+    @Override public String visitUpdate_agg(@NotNull betaParser.Update_aggContext ctx) {
+        def l = ctx.list_labels().text.split(',')*.trim() //.collect{"it." + it}
+        def agg = ctx.aggr.text.toLowerCase()
+        return "$l.$agg()"
+    }
+
+    @Override public String visitUpdate_exp(@NotNull betaParser.Update_expContext ctx) { return 'it.'+ ctx.attribute.text + '=' + visit(ctx.expr()) }
+
+
+    @Override public String visitValue(@NotNull betaParser.ValueContext ctx) { return (ctx.v.getType()== betaParser.IDENTIFIER)? 'it.' + ctx.v.text: ctx.v.text }
+
+    @Override public String visitExpr_pm(@NotNull betaParser.Expr_pmContext ctx) { return visit(ctx.expr(0)) + ctx.op.text + visit(ctx.expr(1)) }
+
+    @Override public String visitExpr_md(@NotNull betaParser.Expr_mdContext ctx) { return visit(ctx.expr(0)) + ctx.op.text + visit(ctx.expr(1)) }
+
+    @Override public String visitExpr_number(@NotNull betaParser.Expr_numberContext ctx) { return ctx.text }
+
+    @Override public String visitExpr_parens(@NotNull betaParser.Expr_parensContext ctx) { return "(" + visit(ctx.expr()) + ")" }
+
+    @Override public String visitExpr_id(@NotNull betaParser.Expr_idContext ctx) { return 'it.' + ctx.text }
+
+    @Override public String visitExpr_tableid(@NotNull betaParser.Expr_tableidContext ctx) { return "it." + ctx.QUALIFIED_ID().text.replace(".", "_") }
+
+    @Override public String visitExpr_cast(@NotNull betaParser.Expr_castContext ctx) {
+        def cast
+        switch(ctx.type.getType()){
+            case betaParser.CAST_FLOAT:
+                cast = "toFloat()"
+                break
+            case betaParser.CAST_INTEGER:
+                cast = "toInteger()"
+                break
+            default:
+                cast = "toInteger()"
+                break
+        }
+
+        return '(' + visit(ctx.expr()) + ').' + cast;
+    }
+
+    @Override public String visitExp_agg(@NotNull betaParser.Exp_aggContext ctx) {
+        def l = ctx.list_identifiers().text.split(',')*.trim() //.collect{"it." + it}
+        def agg = ctx.aggr.text.toLowerCase()
+        return "$l.$agg()"
+    }
 }
 
