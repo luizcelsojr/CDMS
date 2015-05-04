@@ -45,7 +45,6 @@ value: v=(INT | STRING | IDENTIFIER | QUALIFIED_ID);
 
 list_identifiers: (QUALIFIED_ID ',')* QUALIFIED_ID;
 
-
 CAST_FLOAT: 'FLOAT';
 CAST_INTEGER: 'INTEGER';
 AND : 'AND';
