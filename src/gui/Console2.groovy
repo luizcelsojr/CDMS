@@ -51,6 +51,7 @@ frame = swing.frame(title:'CDMS Console',
             }
             hbox(border:BF.createTitledBorder('Output')) {
                 scrollPane {
+
                     tableOut = table() {
                         tableModel() {
                         }
