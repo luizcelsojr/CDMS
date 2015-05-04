@@ -44,7 +44,7 @@ frame = swing.frame(title:'CDMS Console',
             hbox(border:BF.createTitledBorder('Query')) {
                 scrollPane{
                     def defaultText = ""
-                    def file = new File("/Users/luizcelso/Dropbox/workspace/CDMS2/queries/query-beta-geoinfo-distance.groovy")
+                    def file = new File("/Users/luizcelso/Dropbox/workspace/CDMS2/queries/query-beta-algebra.beta")
                     if (file.exists()) defaultText = file.getText()
                     text = textPane(text:defaultText)
                 }

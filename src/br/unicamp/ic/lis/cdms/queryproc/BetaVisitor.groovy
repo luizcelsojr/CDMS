@@ -100,7 +100,22 @@ class BetaVisitor extends betaBaseVisitor {
 
         assert memory[id], "Runtime error: Table $id not declared."
 
+        println "xxxxxxxxxx " + exp
+
         t = this.opr.select(memory[id], this.sh.evaluate("{it -> " + exp + "}"))
+
+        return t
+    }
+
+    @Override public Table visitProject(@NotNull betaParser.ProjectContext ctx) {
+        Table t
+        def columns = ctx.list_labels().text.split(',')*.trim()
+
+        String id = ctx.TABLE_ID().getText();
+
+        assert memory[id], "Runtime error: Table $id not declared."
+
+        t = this.opr.project(memory[id], columns)
 
         return t
     }
@@ -149,7 +164,7 @@ class BetaVisitor extends betaBaseVisitor {
     }
 
     @Override public String visitCol_test(@NotNull betaParser.Col_testContext ctx) {
-        def left = 'it.' + ctx.left.text;
+        def left = visit(ctx.left);
         def right = visit(ctx.right)
         def test =  ( ctx.test.getType() == betaParser.EQ )? "==": ctx.test.text
         return "$left $test $right";
@@ -178,7 +193,18 @@ class BetaVisitor extends betaBaseVisitor {
     @Override public String visitUpdate_exp(@NotNull betaParser.Update_expContext ctx) { return 'it.'+ ctx.attribute.text + '=' + visit(ctx.expr()) }
 
 
-    @Override public String visitValue(@NotNull betaParser.ValueContext ctx) { return (ctx.v.getType()== betaParser.IDENTIFIER)? 'it.' + ctx.v.text: ctx.v.text }
+    @Override public String visitValue(@NotNull betaParser.ValueContext ctx) {
+        switch(ctx.v.getType()){
+            case betaParser.IDENTIFIER:
+                return 'it.' + ctx.v.text
+            case betaParser.QUALIFIED_ID:
+                return 'it.' + ctx.v.text.replace(".", "_")
+            default:
+                return ctx.v.text
+        }
+
+        //return (ctx.v.getType()== betaParser.IDENTIFIER)? 'it.' + ctx.v.text: (ctx.v.getType()== betaParser.QUALIFIED_ID)? 'it.' + ctx.v.text.replace(".", "_"): ctx.v.text
+    }
 
     @Override public String visitExpr_pm(@NotNull betaParser.Expr_pmContext ctx) { return visit(ctx.expr(0)) + ctx.op.text + visit(ctx.expr(1)) }
 
