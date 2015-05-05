@@ -1,4 +1,4 @@
-// Generated from /Users/luizcelso/Dropbox/workspace/CDMS2/src/br/unicamp/ic/lis/cdms/queryproc/parser/beta.g4 by ANTLR 4.5
+// Generated from /home/luizcelso/workspace/CDMS2/src/br/unicamp/ic/lis/cdms/queryproc/parser/beta.g4 by ANTLR 4.5
 package br.unicamp.ic.lis.cdms.queryproc.parser;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;

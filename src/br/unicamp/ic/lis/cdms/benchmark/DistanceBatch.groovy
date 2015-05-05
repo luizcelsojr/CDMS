@@ -14,7 +14,7 @@ import java.util.Random
 import edu.uci.ics.jung.algorithms.scoring.PageRank
 
 //def db_path = '/Users/luizcelso/Dropbox/db/geoinfo'
-def db_path = '/Users/luizcelso/Dropbox/db/food'
+def db_path = '/home/luizcelso/Dropbox/db/food'
 def neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
 def graph = new Neo4jGraph(neoGraphDB)
 int totalTests = 30
