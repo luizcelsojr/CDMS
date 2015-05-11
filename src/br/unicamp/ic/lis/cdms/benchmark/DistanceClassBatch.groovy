@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph
 import com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory
 import com.tinkerpop.blueprints.oupls.jung.GraphJung
 import com.tinkerpop.gremlin.groovy.Gremlin
+import org.neo4j.cypher.ExecutionEngine
 import org.neo4j.graphdb.GraphDatabaseService
 import org.neo4j.graphdb.factory.GraphDatabaseFactory
 import java.text.DecimalFormat
@@ -13,9 +14,8 @@ import java.text.DecimalFormat
 import java.util.Random
 import edu.uci.ics.jung.algorithms.scoring.PageRank
 
-def db_path = '/home/luizcelso/Dropbox/db/fishb'
-//def db_path = '/home/luizcelso/Dropbox/db/geoinfo'
-//def db_path = '/home/luizcelso/Dropbox/db/food'
+//def db_path = '/Users/luizcelso/Dropbox/db/geoinfo'
+def db_path = '/home/luizcelso/Dropbox/db/food'
 def neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
 def graph = new Neo4jGraph(neoGraphDB)
 int totalTests = 30
@@ -32,9 +32,13 @@ pr.evaluate()
 def vertices = j.getVertices().collect{ [it, pr.getVertexScore(it)] }
 
 //def vertices = [[graph.v(1111), 1.5], [graph.v(1113), 1.5],[graph.v(1044661), 0.66]]
-//def vertices = [[graph.v(1), 1.5], [graph.v(9), 1.5],[graph.v(5), 0.66]]
+//def vertices = [[graph.v(1), 1.5], [graph.v(11), 1.5],[graph.v(3), 0.66]]
 
 println "total vertices: ${vertices.size()}"
+
+def engine = new ExecutionEngine( neoGraphDB );
+
+def regResults = engine.execute(this.parsedQuery.regular[0].value().trim());
 
 //vertices.each{println it[0].id + ": " + graph.v(it[0].id).map()}
 
@@ -45,15 +49,10 @@ int max = vertices.size() - 1
 def deltaTotal = 0.0
 def gainTotal = 0.0
 
-def cBestTotal = 0
-def cWorstTotal = 0
-
 totalTests.times{
     def orig = rand.nextInt(max) + 1 //to avoid root node
     def dest = rand.nextInt(max) + 1
-    while ((orig == dest) || (vertices[orig][1] == vertices[dest][1])) dest = rand.nextInt(max) + 1
-
-    println "testing ${vertices[orig][0]} -> ${vertices[dest][0]}"
+    while (orig == dest) dest = rand.nextInt(max) + 1
 
     def predictedBest, predictedWorst, root, target
     if (vertices[orig][1] < vertices[dest][1]){
@@ -65,9 +64,7 @@ totalTests.times{
     }
 
 
-    def cBest = 0
-    def cWorst = 0
-
+    def cBest, cWorst = 0
 
     predictedBest = Timer.closureBenchmark{cBest=shortestPath(root, target, 10)}
     println "total predicted best time: ${predictedBest} --> ${predictedBest/1000/60/60}h ${predictedBest/1000/60}min"
@@ -89,10 +86,8 @@ totalTests.times{
     deltaTotal += (predictedWorst - predictedBest)
     println "from: ${vertices[orig][0]}(${vertices[orig][1]}) to: ${vertices[dest][0]}(${vertices[dest][1]}) - best predicted time: ${predictedBest} - worst predicted time: ${predictedWorst} - delta: ${predictedWorst - predictedBest}"
 
-    def gain = (cBest/cWorst)
+    def gain = 1.0 - (cBest/cWorst)
     gainTotal += gain
-    cBestTotal += cBest
-    cWorstTotal += cWorst
     println "from: ${vertices[orig][0]}(${vertices[orig][1]}) to: ${vertices[dest][0]}(${vertices[dest][1]}) - best predicted count: ${cBest} - worst predicted count: ${cWorst} - gain: ${gain}"
 
 
@@ -102,8 +97,6 @@ totalTests.times{
 
 println "delta total time: ${deltaTotal} --> ${deltaTotal/1000/60/60}h ${deltaTotal/1000/60}min"
 println "average gain: ${gainTotal/totalTests} -- ${new DecimalFormat("##,###").format(gainTotal/totalTests)}"
-println "total best: ${new DecimalFormat("##,###").format(cBestTotal)} --- total worst: ${new DecimalFormat("##,###").format(cWorstTotal)}"
-println "delta best/worst: ${new DecimalFormat("##,###.##").format(cBestTotal.toFloat()/cWorstTotal.toFloat())}"
 
 
 def shortestPath(root, target, int n){

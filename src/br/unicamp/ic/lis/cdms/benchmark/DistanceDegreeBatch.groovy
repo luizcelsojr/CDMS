@@ -13,23 +13,19 @@ import java.text.DecimalFormat
 import java.util.Random
 import edu.uci.ics.jung.algorithms.scoring.PageRank
 
-def db_path = '/home/luizcelso/Dropbox/db/fishb'
-//def db_path = '/home/luizcelso/Dropbox/db/geoinfo'
+//def db_path = '/home/luizcelso/Dropbox/db/fishb'
+def db_path = '/home/luizcelso/db/neoLMDB-RO'
 //def db_path = '/home/luizcelso/Dropbox/db/food'
 def neoGraphDB = new GraphDatabaseFactory().newEmbeddedDatabase(db_path)
 def graph = new Neo4jGraph(neoGraphDB)
-int totalTests = 30
+int totalTests = 1000
 
 registerShutdownHook( neoGraphDB )
 Gremlin.load()
 
 
-j = new GraphJung(graph)
-pr = new PageRank(j, 0.15d)
+def vertices = graph.getVertices().collect{ [it, it.both.count()] }
 
-pr.evaluate()
-
-def vertices = j.getVertices().collect{ [it, pr.getVertexScore(it)] }
 
 //def vertices = [[graph.v(1111), 1.5], [graph.v(1113), 1.5],[graph.v(1044661), 0.66]]
 //def vertices = [[graph.v(1), 1.5], [graph.v(9), 1.5],[graph.v(5), 0.66]]
